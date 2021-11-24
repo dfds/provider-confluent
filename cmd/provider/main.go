@@ -31,6 +31,8 @@ import (
 	"github.com/crossplane/provider-template/internal/controller"
 )
 
+// TODO: Rate-limiting
+// TODO: Pooling interval
 func main() {
 	var (
 		app            = kingpin.New(filepath.Base(os.Args[0]), "Template support for Crossplane.").DefaultEnvars()
@@ -41,7 +43,7 @@ func main() {
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	zl := zap.New(zap.UseDevMode(*debug))
-	log := logging.NewLogrLogger(zl.WithName("provider-template"))
+	log := logging.NewLogrLogger(zl.WithName("provider-confluent"))
 	if *debug {
 		// The controller-runtime runs with a no-op logger by default. It is
 		// *very* verbose even at info level, so we only provide it a real
@@ -56,7 +58,7 @@ func main() {
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		LeaderElection:   *leaderElection,
-		LeaderElectionID: "crossplane-leader-election-provider-template",
+		LeaderElectionID: "crossplane-leader-election-provider-confluent",
 		SyncPeriod:       syncPeriod,
 	})
 	kingpin.FatalIfError(err, "Cannot create controller manager")

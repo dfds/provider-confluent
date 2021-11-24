@@ -1,4 +1,4 @@
-module github.com/crossplane/provider-template
+module github.com/dfds/provider-confluent
 
 go 1.16
 

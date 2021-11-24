@@ -27,7 +27,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "sample.template.crossplane.io"
+	Group   = "cluster.confluent.crossplane.io"
 	Version = "v1alpha1"
 )
 

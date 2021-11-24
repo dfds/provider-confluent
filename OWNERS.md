@@ -10,6 +10,7 @@ guidelines and responsibilities for the steering committee and maintainers.
 
 ## Maintainers
 
-* Nic Cope <negz@upbound.io> ([negz](https://github.com/negz))
-* Daniel Mangum <dan@upbound.io> ([hasheddan](https://github.com/hasheddan))
-* Muvaffak Onuş <monus@upbound.io> ([muvaf](https://github.com/muvaf))
+* Emil H. Clausen <dfds.provider-confluent.gh@seq.tf> ([sequoiia](https://github.com/SEQUOIIA))
+* Willi Shoall <wicar@dfds.com> ([wicar](https://github.com/wcarlsen))
+* Tobias Andersen <toban@dfds.com> ([zaradardfds](https://github.com/zaradardfds))
+* Sami Maher Dieb <samdi@dfds.com> ([samdi](https://github.com/samidbb))
