@@ -19,6 +19,7 @@ type ConfluentClient struct {
 const CONFLUENT_EMAIL, CONFLUENT_PASSWORD = "CONFLUENT_EMAIL", "CONFLUENT_PASSWORD"
 const CLI_NAME = "confluent"
 
+
 func (c *ConfluentClient) Login(email string, password string) error {
 	cmd := exec.Command(CLI_NAME, "login")
 	cmd.Env = []string{fmt.Sprintf("%v=%v", CONFLUENT_EMAIL, email), fmt.Sprintf("%v=%v", CONFLUENT_PASSWORD, password)}

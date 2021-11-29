@@ -42,10 +42,8 @@ const (
 	errTrackPCUsage = "cannot track ProviderConfig usage"
 	errGetPC        = "cannot get ProviderConfig"
 	errGetCreds     = "cannot get credentials"
-
 	errNewClient = "cannot create new Service"
 )
-
 // A NoOpService does nothing.
 type NoOpService struct{}
 
