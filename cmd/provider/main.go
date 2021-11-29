@@ -27,12 +27,10 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 
-	"github.com/crossplane/provider-template/apis"
-	"github.com/crossplane/provider-template/internal/controller"
+	"github.com/dfds/provider-confluent/apis"
+	"github.com/dfds/provider-confluent/internal/controller"
 )
 
-// TODO: Rate-limiting
-// TODO: Pooling interval
 func main() {
 	var (
 		app            = kingpin.New(filepath.Base(os.Args[0]), "Template support for Crossplane.").DefaultEnvars()
