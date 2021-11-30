@@ -70,7 +70,7 @@ func (mg *SchemaRegistry) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetWriteConnectionSecretToReference of this MyType.
+// SetWriteConnectionSecretToReference of this SchemaRegistry.
 func (mg *SchemaRegistry) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

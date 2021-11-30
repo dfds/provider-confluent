@@ -16,7 +16,7 @@ limitations under the License.
 
 // Package v1alpha1 contains the core resources of the Template provider.
 // +kubebuilder:object:generate=true
-// +groupName=template.crossplane.io
+// +groupName=confluent.crossplane.io
 // +versionName=v1alpha1
 package v1alpha1
 
