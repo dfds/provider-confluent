@@ -6,10 +6,10 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients"
 )
 
-type CreateSchemaRegistryCommand exec.Cmd
+type SchemaCreateCommand exec.Cmd
 
-func NewCreateSchemaRegistryCommand(subject string, schemaPath string, schemaType string, environment string, apiKey string, apiSecret string) CreateSchemaRegistryCommand {
-	var command = CreateSchemaRegistryCommand{
+func NewSchemaCreateCommand(subject string, schemaPath string, schemaType string, environment string, apiKey string, apiSecret string) SchemaCreateCommand {
+	var command = SchemaCreateCommand{
 		Path: clients.CLI_NAME,
 		Args: []string{"schema-registry", "schema", "create", "--subject", subject, "--schema", schemaPath, "--type", schemaType, "--environment", environment, "--api-key", apiKey, "--api-secret", apiSecret},
 	}

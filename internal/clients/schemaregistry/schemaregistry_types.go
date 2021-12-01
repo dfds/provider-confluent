@@ -3,9 +3,9 @@ package schemaregistry
 import "github.com/dfds/provider-confluent/internal/clients"
 
 type Client interface {
-	Create(subject string, schema string, schemaType string, environment string) (string, error)
-	Delete(subject string, version string, permanent bool, environment string) (string, error)
-	Describe(subject string, version string, environment string) (SchemaDescribeResponse, error)
+	SchemaCreate(subject string, schema string, schemaType string, environment string) (string, error)
+	SchemaDelete(subject string, version string, permanent bool, environment string) (string, error)
+	SchemaDescribe(subject string, version string, environment string) (SchemaDescribeResponse, error)
 }
 
 type SchemaRegistryClient struct {

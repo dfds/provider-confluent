@@ -23,7 +23,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
 	"github.com/dfds/provider-confluent/internal/controller/config"
-	"github.com/dfds/provider-confluent/internal/controller/schemaregistry"
+	"github.com/dfds/provider-confluent/internal/controller/schema"
 )
 
 // Setup creates all Template controllers with the supplied logger and adds them to
@@ -31,7 +31,7 @@ import (
 func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
 		config.Setup,
-		schemaregistry.Setup,
+		schema.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

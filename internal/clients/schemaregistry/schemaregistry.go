@@ -2,18 +2,19 @@ package schemaregistry
 
 import (
 	"encoding/json"
+	"os/exec"
+	"strings"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"go.dfds.cloud/utils/config"
-	"os/exec"
-	"strings"
 
 	"github.com/dfds/provider-confluent/internal/clients"
 	"github.com/dfds/provider-confluent/internal/clients/schemaregistry/commands"
 )
 
 const (
-	SCHEMA_REGISTRY_API_KEY = "PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_KEY"
+	SCHEMA_REGISTRY_API_KEY    = "PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_KEY"
 	SCHEMA_REGISTRY_API_SECRET = "PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_SECRET"
 )
 
@@ -27,14 +28,14 @@ func NewClient(c clients.Config) Client {
 	return &SchemaRegistryClient{Config: c}
 }
 
-func (c *SchemaRegistryClient) Create(subject string, schema string, schemaType string, environment string) (string, error) {
+func (c *SchemaRegistryClient) SchemaCreate(subject string, schema string, schemaType string, environment string) (string, error) {
 	schemaGuid := uuid.New().String()
 	path, err := CreateFile([]byte(schema), schemaGuid, "")
 	if err != nil {
 		return "", err
 	}
 
-	var cmd = commands.NewCreateSchemaRegistryCommand(subject, path, schemaType, environment, c.Config.ApiKey, c.Config.ApiSecret)
+	var cmd = commands.NewSchemaCreateCommand(subject, path, schemaType, environment, c.Config.ApiKey, c.Config.ApiSecret)
 	var cmdOutput, cmdErr = executeCommand(exec.Cmd(cmd))
 
 	err = RemoveFile(path)
@@ -45,15 +46,15 @@ func (c *SchemaRegistryClient) Create(subject string, schema string, schemaType 
 	return string(cmdOutput), cmdErr
 }
 
-func (c *SchemaRegistryClient) Delete(subject string, version string, permanent bool, environment string) (string, error) {
-	var cmd = commands.NewDeleteSchemaRegistryCommand(subject, version, permanent, environment, c.Config.ApiKey, c.Config.ApiSecret)
+func (c *SchemaRegistryClient) SchemaDelete(subject string, version string, permanent bool, environment string) (string, error) {
+	var cmd = commands.NewSchemaDeleteCommand(subject, version, permanent, environment, c.Config.ApiKey, c.Config.ApiSecret)
 	var cmdOutput, cmdErr = executeCommand(exec.Cmd(cmd))
 
 	return string(cmdOutput), cmdErr
 }
 
-func (c *SchemaRegistryClient) Describe(subject string, version string, environment string) (SchemaDescribeResponse, error) {
-	var cmd = commands.NewDescribeSchemaRegistryCommand(subject, version, environment, c.Config.ApiKey, c.Config.ApiSecret)
+func (c *SchemaRegistryClient) SchemaDescribe(subject string, version string, environment string) (SchemaDescribeResponse, error) {
+	var cmd = commands.NewSchemaDescribeCommand(subject, version, environment, c.Config.ApiKey, c.Config.ApiSecret)
 	var cmdOutput, cmdErr = executeCommand(exec.Cmd(cmd))
 	var schema SchemaDescribeResponse
 
@@ -74,7 +75,11 @@ func (c *SchemaRegistryClient) Describe(subject string, version string, environm
 }
 
 func executeCommand(cmd exec.Cmd) ([]byte, error) {
-	out, err := exec.Command(cmd.Path, cmd.Args...).CombinedOutput()
+	execCmd := exec.Command(cmd.Path, cmd.Args...)
+
+	execCmd.Env = append(execCmd.Env, config.GetEnvValue("PATH", ""))
+
+	out, err := execCmd.CombinedOutput()
 
 	if err != nil {
 		return out, err

@@ -9,32 +9,32 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// SchemaRegistryParameters are the configurable fields of a SchemaRegistry.
-type SchemaRegistryParameters struct {
+// SchemaParameters are the configurable fields of a Schema.
+type SchemaParameters struct {
 	Subject     string `json:"subject"`
 	Schema      string `json:"schema"`
 	SchemaType  string `json:"schemaType"`
 	Environment string `json:"environment"`
 }
 
-// SchemaRegistryObservation are the observable fields of a SchemaRegistry.
-type SchemaRegistryObservation struct {
+// SchemaObservation are the observable fields of a Schema.
+type SchemaObservation struct {
 	Subject     string `json:"subject,omitempty"`
 	Schema      string `json:"schema,omitempty"`
 	SchemaType  string `json:"schemaType,omitempty"`
 	Environment string `json:"environment,omitempty"`
 }
 
-// A SchemaRegistrySpec defines the desired state of a SchemaRegistry.
-type SchemaRegistrySpec struct {
+// A SchemaSpec defines the desired state of a Schema.
+type SchemaSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       SchemaRegistryParameters `json:"forProvider"`
+	ForProvider       SchemaParameters `json:"forProvider"`
 }
 
-// A MyTypeStatus represents the observed state of a SchemaRegistry.
-type SchemaRegistryStatus struct {
+// A MyTypeStatus represents the observed state of a Schema.
+type SchemaStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          SchemaRegistryObservation `json:"atProvider,omitempty"`
+	AtProvider          SchemaObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -46,31 +46,31 @@ type SchemaRegistryStatus struct {
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,confluent}
-type SchemaRegistry struct {
+type Schema struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   SchemaRegistrySpec   `json:"spec"`
-	Status SchemaRegistryStatus `json:"status,omitempty"`
+	Spec   SchemaSpec   `json:"spec"`
+	Status SchemaStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// SchemaRegistryList contains a list of SchemaRegistry
-type SchemaRegistryList struct {
+// SchemaList contains a list of Schema
+type SchemaList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []SchemaRegistry `json:"items"`
+	Items           []Schema `json:"items"`
 }
 
 // MyType type metadata.
 var (
-	SchemaRegistryKind             = reflect.TypeOf(SchemaRegistry{}).Name()
-	SchemaRegistryGroupKind        = schema.GroupKind{Group: Group, Kind: SchemaRegistryKind}.String()
-	SchemaRegistryKindAPIVersion   = SchemaRegistryKind + "." + SchemeGroupVersion.String()
-	SchemaRegistryGroupVersionKind = SchemeGroupVersion.WithKind(SchemaRegistryKind)
+	SchemaKind             = reflect.TypeOf(Schema{}).Name()
+	SchemaGroupKind        = schema.GroupKind{Group: Group, Kind: SchemaKind}.String()
+	SchemaKindAPIVersion   = SchemaKind + "." + SchemeGroupVersion.String()
+	SchemaGroupVersionKind = SchemeGroupVersion.WithKind(SchemaKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&SchemaRegistry{}, &SchemaRegistryList{})
+	SchemeBuilder.Register(&Schema{}, &SchemaList{})
 }

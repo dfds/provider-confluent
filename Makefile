@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 # Options
-ORG_NAME=dfds
+ORG_NAME=toban
 PROVIDER_NAME=provider-confluent
 
 build: generate test

@@ -1,9 +1,10 @@
 package schemaregistry
 
 import (
-	"github.com/dfds/provider-confluent/internal/clients"
 	"log"
 	"testing"
+
+	"github.com/dfds/provider-confluent/internal/clients"
 
 	"github.com/dfds/provider-confluent/internal/clients/schemaregistry/commands"
 )
@@ -19,103 +20,102 @@ var (
     { "name" : "Age" , "type" : "int" }
   ]
 }`
-	
 )
 
-func TestDescribeSchemaRegistryCommand(t *testing.T) {
-	var describeCommand = commands.NewDescribeSchemaRegistryCommand("subject", "version", "environment", "key", "secret")
+func TestSchemaDescribeCommand(t *testing.T) {
+	var describeCommand = commands.NewSchemaDescribeCommand("subject", "version", "environment", "key", "secret")
 
-	if (describeCommand.Args[4] != "subject") {
+	if describeCommand.Args[4] != "subject" {
 		t.Errorf("Subject is not in correct index")
 	}
-	
-	if(describeCommand.Args[6] != "version") {
+
+	if describeCommand.Args[6] != "version" {
 		t.Errorf("Version is not in correct index")
 	}
-	
-	if(describeCommand.Args[8] != "environment") {
+
+	if describeCommand.Args[8] != "environment" {
 		t.Errorf("Environment is not in correct index")
 	}
-	
-	if(describeCommand.Args[10] != "key") {
+
+	if describeCommand.Args[10] != "key" {
 		t.Errorf("Key is not in correct index")
 	}
-	
-	if(describeCommand.Args[12] != "secret") {
+
+	if describeCommand.Args[12] != "secret" {
 		t.Errorf("Secret is not in correct index")
 	}
 }
 
-func TestDeleteSchemaRegistryCommand(t *testing.T) {
-	var describeCommand = commands.NewDeleteSchemaRegistryCommand("subject", "version", true, "environment", "key", "secret")
+func TestSchemaDeleteCommand(t *testing.T) {
+	var describeCommand = commands.NewSchemaDeleteCommand("subject", "version", true, "environment", "key", "secret")
 
-	if(describeCommand.Args[4] != "subject") {
+	if describeCommand.Args[4] != "subject" {
 		t.Errorf("Subject is not in correct index")
 	}
-	
-	if(describeCommand.Args[6] != "version") {
+
+	if describeCommand.Args[6] != "version" {
 		t.Errorf("Version is not in correct index")
 	}
-	
-	if(describeCommand.Args[8] != "environment") {
+
+	if describeCommand.Args[8] != "environment" {
 		t.Errorf("Environment is not in correct index")
 	}
-	
-	if(describeCommand.Args[10] != "key") {
+
+	if describeCommand.Args[10] != "key" {
 		t.Errorf("Key is not in correct index")
 	}
-	
-	if(describeCommand.Args[12] != "secret") {
+
+	if describeCommand.Args[12] != "secret" {
 		t.Errorf("Secret is not in correct index")
 	}
-	
-	if(describeCommand.Args[13] != "--permanent") {
+
+	if describeCommand.Args[13] != "--permanent" {
 		t.Errorf("Permanent flag is not set at correct index")
 	}
 }
 
-func TestCreateSchemaRegistryCommand(t *testing.T) {
-	var describeCommand = commands.NewCreateSchemaRegistryCommand("subject", "schema", "schemaType", "environment", "key", "secret")
+func TestSchemaCreateCommand(t *testing.T) {
+	var describeCommand = commands.NewSchemaCreateCommand("subject", "schema", "schemaType", "environment", "key", "secret")
 
-	if(describeCommand.Args[4] != "subject") {
+	if describeCommand.Args[4] != "subject" {
 		t.Errorf("Subject is not in correct index")
 	}
-	
-	if(describeCommand.Args[6] != "schema") {
+
+	if describeCommand.Args[6] != "schema" {
 		t.Errorf("Schema is not in correct index")
 	}
-	
-	if(describeCommand.Args[8] != "schemaType") {
+
+	if describeCommand.Args[8] != "schemaType" {
 		t.Errorf("SchemaType is not in correct index")
 	}
 
-	if(describeCommand.Args[10] != "environment") {
+	if describeCommand.Args[10] != "environment" {
 		t.Errorf("Environment is not in correct index")
 	}
-	
-	if(describeCommand.Args[12] != "key") {
+
+	if describeCommand.Args[12] != "key" {
 		t.Errorf("Key is not in correct index")
 	}
-	
-	if(describeCommand.Args[14] != "secret") {
+
+	if describeCommand.Args[14] != "secret" {
 		t.Errorf("Secret is not in correct index")
 	}
 }
 
-func TestClientCreate(t *testing.T) {
+func TestClientSchemaCreate(t *testing.T) {
 	client := NewClient(clients.Config{
 		ApiKey:    "",
 		ApiSecret: "",
 	})
 
-	resp, err := client.Create("provider-confluent-testclientcreate", testSchema, "AVRO", "env-zvzz7")
+	resp, err := client.SchemaCreate("provider-confluent-testclientcreate", testSchema, "AVRO", "env-zvzz7")
 	if err != nil {
 		log.Println(resp)
 		t.Errorf(err.Error())
 	}
 
 	// Teardown
-	_, err = client.Delete("provider-confluent-testclientcreate", "all", false, "env-zvzz7")
+	_, err = client.SchemaDelete("provider-confluent-testclientcreate", "all", false, "env-zvzz7")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -123,19 +123,19 @@ func TestClientCreate(t *testing.T) {
 	t.Log(resp)
 }
 
-func TestClientDelete(t *testing.T) {
+func TestClientSchemaDelete(t *testing.T) {
 	client := NewClient(clients.Config{
 		ApiKey:    "",
 		ApiSecret: "",
 	})
 
-	respCreate, err := client.Create("provider-confluent-testclientdelete", testSchema, "AVRO", "env-zvzz7")
+	respCreate, err := client.SchemaCreate("provider-confluent-testclientdelete", testSchema, "AVRO", "env-zvzz7")
 	if err != nil {
 		log.Println(respCreate)
 		t.Errorf(err.Error())
 	}
 
-	resp, err := client.Delete("provider-confluent-testclientdelete", "all", false, "env-zvzz7")
+	resp, err := client.SchemaDelete("provider-confluent-testclientdelete", "all", false, "env-zvzz7")
 	if err != nil {
 		log.Println(resp)
 		t.Errorf(err.Error())
@@ -144,26 +144,26 @@ func TestClientDelete(t *testing.T) {
 	t.Log(resp)
 }
 
-func TestClientDescribe(t *testing.T) {
+func TestClientSchemaDescribe(t *testing.T) {
 	client := NewClient(clients.Config{
 		ApiKey:    "",
 		ApiSecret: "",
 	})
 
-	respCreate, err := client.Create("provider-confluent-testclientdescribe", testSchema, "AVRO", "env-zvzz7")
+	respCreate, err := client.SchemaCreate("provider-confluent-testclientdescribe", testSchema, "AVRO", "env-zvzz7")
 	if err != nil {
 		log.Println(respCreate)
 		t.Errorf(err.Error())
 	}
 
-	resp, err := client.Describe("provider-confluent-testclientdescribe", "latest", "env-zvzz7")
+	resp, err := client.SchemaDescribe("provider-confluent-testclientdescribe", "latest", "env-zvzz7")
 	if err != nil {
 		log.Println(resp)
 		t.Errorf(err.Error())
 	}
 
 	// Teardown
-	_, err = client.Delete("provider-confluent-testclientdescribe", "all", false, "env-zvzz7")
+	_, err = client.SchemaDelete("provider-confluent-testclientdescribe", "all", false, "env-zvzz7")
 	if err != nil {
 		t.Errorf(err.Error())
 	}

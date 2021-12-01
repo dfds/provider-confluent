@@ -1,7 +1,32 @@
 apiVersion: meta.pkg.crossplane.io/v1alpha1
 kind: Provider
 metadata:
-  name: provider-confluent
+  name: provider-aws
+  annotations:
+    meta.crossplane.io/maintainer: DFDS <toban@dfds.com>
+    meta.crossplane.io/source: github.com/dfds/provider-confluent
+    meta.crossplane.io/license: Apache-2.0
+    meta.crossplane.io/description: |
+      The Confluent Cloud Crossplane provider adds support for
+      managing Kafka resources in Kubernetes.
+
+    meta.crossplane.io/readme: |
+      `provider-confluent` is the Crossplane infrastructure provider for [Confluent Cloud](https://www.confluent.io/).
+
+      Available resources and their fields can be found in the [CRD
+      Docs](https://doc.crds.dev/github.com/dfds/provider-confluent).
+
+      If you encounter an issue please reach out on
+      [slack.crossplane.io](https://slack.crossplane.io) and create an issue in
+      the [dfds/provider-confluent](https://github.com/dfds/provider-confluent)
+      repo.
+    
+    friendly-name.meta.crossplane.io: Provider Confluent
+    
+    friendly-group-name.meta.crossplane.io/schemaregistry.confluent.crossplane.io: SchemaRegistry
+    
+    friendly-kind-name.meta.crossplane.io/schema.schemaregistry.confluent.crossplane.io: Schema
+    
 spec:
   controller:
     image: DOCKER_REGISTRY/provider-confluent:VERSION

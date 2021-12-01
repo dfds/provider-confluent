@@ -1,23 +1,21 @@
-
----
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: schemaregistries.schemaregistry.template.crossplane.io
+  name: schemas.schemaregistry.confluent.crossplane.io
 spec:
-  group: schemaregistry.template.crossplane.io
+  group: schemaregistry.confluent.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - confluent
-    kind: SchemaRegistry
-    listKind: SchemaRegistryList
-    plural: schemaregistries
-    singular: schemaregistry
+    kind: Schema
+    listKind: SchemaList
+    plural: schemas
+    singular: schema
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -51,7 +49,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: A SchemaRegistrySpec defines the desired state of a SchemaRegistry.
+            description: A SchemaSpec defines the desired state of a Schema.
             properties:
               deletionPolicy:
                 default: Delete
@@ -63,8 +61,7 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: SchemaRegistryParameters are the configurable fields
-                  of a SchemaRegistry.
+                description: SchemaParameters are the configurable fields of a Schema.
                 properties:
                   environment:
                     type: string
@@ -125,11 +122,10 @@ spec:
             - forProvider
             type: object
           status:
-            description: A MyTypeStatus represents the observed state of a SchemaRegistry.
+            description: A MyTypeStatus represents the observed state of a Schema.
             properties:
               atProvider:
-                description: SchemaRegistryObservation are the observable fields of
-                  a SchemaRegistry.
+                description: SchemaObservation are the observable fields of a Schema.
                 properties:
                   environment:
                     type: string
