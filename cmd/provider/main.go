@@ -62,7 +62,7 @@ func main() {
 	kingpin.FatalIfError(err, "Cannot create controller manager")
 
 	rl := ratelimiter.NewDefaultProviderRateLimiter(ratelimiter.DefaultProviderRPS)
-	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add Template APIs to scheme")
-	kingpin.FatalIfError(controller.Setup(mgr, log, rl), "Cannot setup Template controllers")
+	kingpin.FatalIfError(apis.AddToScheme(mgr.GetScheme()), "Cannot add resource APIs to scheme")
+	kingpin.FatalIfError(controller.Setup(mgr, log, rl), "Cannot setup resource controllers")
 	kingpin.FatalIfError(mgr.Start(ctrl.SetupSignalHandler()), "Cannot start controller manager")
 }

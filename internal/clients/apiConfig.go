@@ -1,6 +1,6 @@
 package clients
 
-type Config struct {
+type ApiConfig struct {
 	ApiKey    string `json:apiKey`
 	ApiSecret string `json:apiSecret`
 }

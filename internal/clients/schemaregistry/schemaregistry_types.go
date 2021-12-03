@@ -8,8 +8,13 @@ type Client interface {
 	SchemaDescribe(subject string, version string, environment string) (SchemaDescribeResponse, error)
 }
 
+type SchemaRegistryConfig struct {
+	ApiConfig  clients.ApiConfig
+	SchemaPath string
+}
+
 type SchemaRegistryClient struct {
-	Config clients.Config
+	Config SchemaRegistryConfig
 }
 
 type SchemaDescribeResponse struct {

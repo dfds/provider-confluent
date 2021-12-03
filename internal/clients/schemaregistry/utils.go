@@ -1,27 +1,15 @@
 package schemaregistry
 
 import (
-	"fmt"
-	"go.dfds.cloud/utils/config"
 	"os"
-)
-
-const SCHEMA_FILE_LOCATION = "PROVIDER_CONFLUENT_SCHEMA_FILE_LOCATION"
-
-var (
-	SchemaFileLocation = config.GetEnvValue(SCHEMA_FILE_LOCATION, "")
+	"path/filepath"
 )
 
 func CreateFile(content []byte, name string, path string) (string, error) {
-	filePath := path
+	fullFilePath := filepath.Join(filepath.Clean(path), name)
 
-	if len(path) == 0 {
-		filePath = SchemaFileLocation
-	}
+	err := os.WriteFile(fullFilePath, content, 0600)
 
-	fullFilePath := fmt.Sprintf("%s/%s", filePath, name)
-
-	err := os.WriteFile(fullFilePath, content, 0770)
 	if err != nil {
 		return fullFilePath, err
 	}
@@ -31,5 +19,6 @@ func CreateFile(content []byte, name string, path string) (string, error) {
 
 func RemoveFile(path string) error {
 	err := os.Remove(path)
+
 	return err
 }

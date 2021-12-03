@@ -35,6 +35,8 @@ import (
 
 	"github.com/dfds/provider-confluent/apis/schema/v1alpha1"
 	apisv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
+
+	srClient "github.com/dfds/provider-confluent/internal/clients/schemaregistry"
 )
 
 const (
@@ -52,7 +54,14 @@ var (
 	newNoOpService = func(_ []byte) (interface{}, error) { return &NoOpService{}, nil }
 )
 
-// Setup adds a controller that reconciles SchemaRegistry managed resources.
+var (
+	createAndConvertClientFunc = func(data []byte) (interface{}, error) {
+		//TODO: Figure out what to do with login logic
+		return srClient.NewClient(srClient.SchemaRegistryConfig{}).(interface{}), nil
+	}
+)
+
+// Setup adds a controller that reconciles Schema managed resources.
 func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	name := managed.ControllerName(v1alpha1.SchemaGroupKind)
 

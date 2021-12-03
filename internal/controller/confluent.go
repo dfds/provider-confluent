@@ -26,7 +26,7 @@ import (
 	"github.com/dfds/provider-confluent/internal/controller/schema"
 )
 
-// Setup creates all Template controllers with the supplied logger and adds them to
+// Setup creates all controllers with the supplied logger and adds them to
 // the supplied manager.
 func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
