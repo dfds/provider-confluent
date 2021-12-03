@@ -5,8 +5,7 @@ metadata:
   name: confluent-provider-secret
 type: Opaque
 data:
-  username: dXNlcm5hbWUK
-  password: cGFzc3dvcmQK
+  # credentials: BASE64ENCODED_PROVIDER_CREDS
 ---
 apiVersion: confluent.crossplane.io/v1alpha1
 kind: ProviderConfig

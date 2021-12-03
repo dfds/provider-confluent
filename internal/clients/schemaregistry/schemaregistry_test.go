@@ -22,8 +22,8 @@ package schemaregistry
 
 // var testConfig = SchemaRegistryConfig{
 // 	ApiConfig: clients.ApiConfig{
-// 		ApiKey:    config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_KEY", "OTYPQENXLQPIPFRO"),
-// 		ApiSecret: config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_SECRET", "aAohz7olSJgmwH1eB/NlwJU4nrPj6ABmlHagua0+yMYZROrBtlq8SguIxmsJYiLs"),
+// 		ApiKey:    config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_KEY", ""),
+// 		ApiSecret: config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_SECRET", ""),
 // 	},
 // 	SchemaPath: config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_FILE_LOCATION", "/tmp"),
 // }

@@ -1,7 +1,7 @@
 apiVersion: meta.pkg.crossplane.io/v1alpha1
 kind: Provider
 metadata:
-  name: provider-aws
+  name: provider-confluent
   annotations:
     meta.crossplane.io/maintainer: DFDS <toban@dfds.com>
     meta.crossplane.io/source: github.com/dfds/provider-confluent
