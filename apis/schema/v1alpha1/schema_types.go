@@ -25,13 +25,13 @@ type SchemaObservation struct {
 	Environment string `json:"environment,omitempty"`
 }
 
-// A SchemaSpec defines the desired state of a Schema.
+// SchemaSpec defines the desired state of a Schema.
 type SchemaSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
 	ForProvider       SchemaParameters `json:"forProvider"`
 }
 
-// A MyTypeStatus represents the observed state of a Schema.
+// SchemaStatus represents the observed state of a Schema.
 type SchemaStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          SchemaObservation `json:"atProvider,omitempty"`
@@ -39,7 +39,7 @@ type SchemaStatus struct {
 
 // +kubebuilder:object:root=true
 
-// A MyType is an example API type.
+// Schema is an example API type.
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
@@ -63,7 +63,7 @@ type SchemaList struct {
 	Items           []Schema `json:"items"`
 }
 
-// MyType type metadata.
+// Schema type metadata.
 var (
 	SchemaKind             = reflect.TypeOf(Schema{}).Name()
 	SchemaGroupKind        = schema.GroupKind{Group: Group, Kind: SchemaKind}.String()

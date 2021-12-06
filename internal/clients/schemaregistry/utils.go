@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 )
 
+// CreateFile creates a file at a given location with the supplied content
 func CreateFile(content []byte, name string, path string) (string, error) {
 	fullFilePath := filepath.Join(filepath.Clean(path), name)
 
@@ -17,6 +18,7 @@ func CreateFile(content []byte, name string, path string) (string, error) {
 	return fullFilePath, nil
 }
 
+// RemoveFile removes a file at a given location
 func RemoveFile(path string) error {
 	err := os.Remove(path)
 

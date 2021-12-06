@@ -1,1 +1,1 @@
-package schema
+package schema //nolint

@@ -55,9 +55,9 @@ var (
 )
 
 var (
-	createAndConvertClientFunc = func(data []byte) (interface{}, error) {
+	createAndConvertClientFunc = func(data []byte) (interface{}, error) { //nolint
 		//TODO: Figure out what to do with login logic
-		return srClient.NewClient(srClient.SchemaRegistryConfig{}).(interface{}), nil
+		return srClient.NewClient(srClient.Config{}).(interface{}), nil
 	}
 )
 

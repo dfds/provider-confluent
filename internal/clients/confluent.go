@@ -5,23 +5,33 @@ import (
 	"os/exec"
 )
 
-type Client interface {
+// IClient interface for confluent client
+type IClient interface {
 	Authenticate(email string, password string) error
 }
 
-func NewClient() Client {
-	return &ConfluentClient{}
+// NewClient is a factory method for confluent client
+func NewClient() IClient {
+	return &Client{}
 }
 
-type ConfluentClient struct {
+// Client is a struct for confluent client
+type Client struct {
 }
 
-const CONFLUENT_EMAIL, CONFLUENT_PASSWORD = "CONFLUENT_PLATFORM_USERNAME", "CONFLUENT_PLATFORM_PASSWORD"
-const CLI_NAME = "confluent"
+// ConflientUsernameEnvKey is the environment key used to assign the username used by the confluent CLI
+const ConflientUsernameEnvKey = "CONFLUENT_PLATFORM_USERNAME"
 
-func (c *ConfluentClient) Authenticate(email string, password string) error {
-	cmd := exec.Command(CLI_NAME, "login")
-	cmd.Env = []string{fmt.Sprintf("%v=%v", CONFLUENT_EMAIL, email), fmt.Sprintf("%v=%v", CONFLUENT_PASSWORD, password)}
+// ConfluentPasswordEnvKey is the environment key used to assign the password used by the confluent CLI
+const ConfluentPasswordEnvKey = "CONFLUENT_PLATFORM_PASSWORD"
+
+// CliName is the name of the confluent CLI application
+const CliName = "confluent"
+
+// Authenticate a user via the confluent client
+func (c *Client) Authenticate(email string, password string) error {
+	cmd := exec.Command(CliName, "login")
+	cmd.Env = []string{fmt.Sprintf("%v=%v", ConflientUsernameEnvKey, email), fmt.Sprintf("%v=%v", ConfluentPasswordEnvKey, password)}
 	cmdOutput, err := cmd.CombinedOutput()
 
 	if err != nil {
