@@ -70,8 +70,8 @@ func (c *Client) SchemaDescribe(subject string, version string, environment stri
 
 func executeCommand(cmd exec.Cmd) ([]byte, error) {
 	execCmd := exec.Command(cmd.Path, cmd.Args...) //nolint:gosec
-
-	execCmd.Env = append(execCmd.Env, os.Getenv("PATH"))
+	execCmd.Env = os.Environ()
+	//execCmd.Env = append(execCmd.Env, fmt.Sprintf("PATH=%s", os.Getenv("PATH")))
 
 	out, err := execCmd.CombinedOutput()
 
