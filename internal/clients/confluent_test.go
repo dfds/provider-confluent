@@ -1,10 +1,11 @@
+// nolint
 package clients
 
 import (
-	"go.dfds.cloud/utils/config"
 	"testing"
-)
 
+	"go.dfds.cloud/utils/config"
+)
 
 func TestClientAuthenticate(t *testing.T) {
 	client := NewClient()
