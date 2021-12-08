@@ -36,7 +36,11 @@ import (
 	"github.com/dfds/provider-confluent/apis/schema/v1alpha1"
 	apisv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
 
-	srClient "github.com/dfds/provider-confluent/internal/clients/schemaregistry"
+	"encoding/json"
+	"os"
+
+	confluentClient "github.com/dfds/provider-confluent/internal/clients"
+	schemaregistryClient "github.com/dfds/provider-confluent/internal/clients/schemaregistry"
 )
 
 const (
@@ -47,17 +51,34 @@ const (
 	errNewClient    = "cannot create new Service"
 )
 
-// A NoOpService does nothing.
-type NoOpService struct{}
-
-var (
-	newNoOpService = func(_ []byte) (interface{}, error) { return &NoOpService{}, nil }
-)
-
 var (
 	createAndConvertClientFunc = func(data []byte) (interface{}, error) { //nolint
-		//TODO: Figure out what to do with login logic
-		return srClient.NewClient(srClient.Config{}).(interface{}), nil
+		cClient := confluentClient.NewClient()
+
+		cClient.Authenticate(os.Getenv(confluentClient.ConflientUsernameEnvKey), os.Getenv(confluentClient.ConfluentPasswordEnvKey))
+
+		var apiConfigs []confluentClient.APIConfig
+
+		err := json.Unmarshal(data, &apiConfigs)
+
+		_ = err
+
+		var apiConfig confluentClient.APIConfig
+
+		for _, value := range apiConfigs {
+			if value.Name == "schema-controller" {
+				apiConfig = value
+
+				break
+			}
+		}
+
+		srConfig := schemaregistryClient.Config{
+			APIConfig:  apiConfig,
+			SchemaPath: "/tmp",
+		}
+
+		return schemaregistryClient.NewClient(srConfig).(interface{}), nil
 	}
 )
 
@@ -74,7 +95,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 		managed.WithExternalConnecter(&connector{
 			kube:         mgr.GetClient(),
 			usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &apisv1alpha1.ProviderConfigUsage{}),
-			newServiceFn: newNoOpService}),
+			newServiceFn: createAndConvertClientFunc}),
 		managed.WithLogger(l.WithValues("controller", name)),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))))
 
