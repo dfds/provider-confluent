@@ -26,7 +26,7 @@ func (c *Client) SchemaCreate(subject string, schema string, schemaType string, 
 		return "", err
 	}
 
-	var cmd = commands.NewSchemaCreateCommand(subject, path, schemaType, environment, c.Config.APIConfig.APIKey, c.Config.APIConfig.APISecret)
+	var cmd = commands.NewSchemaCreateCommand(subject, path, schemaType, environment, c.Config.APICredentials.Key, c.Config.APICredentials.Secret)
 	var cmdOutput, cmdErr = executeCommand(exec.Cmd(cmd))
 
 	err = RemoveFile(path)
@@ -40,7 +40,7 @@ func (c *Client) SchemaCreate(subject string, schema string, schemaType string, 
 
 // SchemaDelete deletes a schema in the schemaregistry
 func (c *Client) SchemaDelete(subject string, version string, permanent bool, environment string) (string, error) {
-	var cmd = commands.NewSchemaDeleteCommand(subject, version, permanent, environment, c.Config.APIConfig.APIKey, c.Config.APIConfig.APISecret)
+	var cmd = commands.NewSchemaDeleteCommand(subject, version, permanent, environment, c.Config.APICredentials.Key, c.Config.APICredentials.Secret)
 	var cmdOutput, cmdErr = executeCommand(exec.Cmd(cmd))
 
 	return string(cmdOutput), cmdErr
@@ -48,7 +48,7 @@ func (c *Client) SchemaDelete(subject string, version string, permanent bool, en
 
 // SchemaDescribe gets a schema in the schemaregistry
 func (c *Client) SchemaDescribe(subject string, version string, environment string) (SchemaDescribeResponse, error) {
-	var cmd = commands.NewSchemaDescribeCommand(subject, version, environment, c.Config.APIConfig.APIKey, c.Config.APIConfig.APISecret)
+	var cmd = commands.NewSchemaDescribeCommand(subject, version, environment, c.Config.APICredentials.Key, c.Config.APICredentials.Secret)
 	var cmdOutput, cmdErr = executeCommand(exec.Cmd(cmd))
 	var schema SchemaDescribeResponse
 

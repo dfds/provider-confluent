@@ -19,6 +19,7 @@ package schema
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,9 +37,7 @@ import (
 	"github.com/dfds/provider-confluent/apis/schema/v1alpha1"
 	apisv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
 
-	"encoding/json"
-	"os"
-
+	"github.com/dfds/provider-confluent/internal/clients"
 	confluentClient "github.com/dfds/provider-confluent/internal/clients"
 	schemaregistryClient "github.com/dfds/provider-confluent/internal/clients/schemaregistry"
 )
@@ -52,29 +51,23 @@ const (
 )
 
 var (
-	createAndConvertClientFunc = func(data []byte) (interface{}, error) { //nolint
+	createAndConvertClientFunc = func(clientCreds []byte, apiCreds clients.APICredentials) (interface{}, error) { //nolint
+		credParts := strings.Split(string(clientCreds), ":")
+
+		if len(credParts) != 2 {
+			return nil, errors.New("Invalid client credentials")
+		}
+
 		cClient := confluentClient.NewClient()
+		authErr := cClient.Authenticate(credParts[0], credParts[1])
 
-		cClient.Authenticate(os.Getenv(confluentClient.ConflientUsernameEnvKey), os.Getenv(confluentClient.ConfluentPasswordEnvKey))
-
-		var apiConfigs []confluentClient.APIConfig
-
-		err := json.Unmarshal(data, &apiConfigs)
-
-		_ = err
-
-		var apiConfig confluentClient.APIConfig
-
-		for _, value := range apiConfigs {
-			if value.Name == "schema-controller" {
-				apiConfig = value
-
-				break
-			}
+		if authErr != nil {
+			return nil, authErr
 		}
 
 		srConfig := schemaregistryClient.Config{
-			APIConfig:  apiConfig,
+			APICredentials: apiCreds,
+			//TODO: This should be inferred from somewhere else (== not hardcoded)
 			SchemaPath: "/tmp",
 		}
 
@@ -111,7 +104,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 type connector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(creds []byte) (interface{}, error)
+	newServiceFn func(creds []byte, apiCreds confluentClient.APICredentials) (interface{}, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -134,13 +127,22 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetPC)
 	}
 
-	cd := pc.Spec.Credentials
-	data, err := resource.CommonCredentialExtractor(ctx, cd.Source, c.kube, cd.CommonCredentialSelectors)
+	clientCredentialData, err := resource.CommonCredentialExtractor(ctx, pc.Spec.Credentials.Source, c.kube, pc.Spec.Credentials.CommonCredentialSelectors)
 	if err != nil {
 		return nil, errors.Wrap(err, errGetCreds)
 	}
 
-	svc, err := c.newServiceFn(data)
+	var apiCredentials confluentClient.APICredentials
+
+	for _, value := range pc.Spec.APICredentials {
+		if value.Identifier == v1alpha1.SchemeGroupVersion.Identifier() {
+			apiCredentials = value
+
+			break
+		}
+	}
+
+	svc, err := c.newServiceFn(clientCredentialData, apiCredentials)
 	if err != nil {
 		return nil, errors.Wrap(err, errNewClient)
 	}

@@ -22,9 +22,10 @@ const testSchema = `
 }`
 
 var testConfig = Config{
-	APIConfig: clients.APIConfig{
-		APIKey:    config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_KEY", ""),
-		APISecret: config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_SECRET", ""),
+	APICredentials: clients.APICredentials{
+		Identifier: "FOO",
+		Key:        config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_KEY", ""),
+		Secret:     config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_SECRET", ""),
 	},
 	SchemaPath: config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_FILE_LOCATION", "C:\\misc\\tmp"),
 }

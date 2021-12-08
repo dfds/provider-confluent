@@ -11,8 +11,8 @@ type IClient interface {
 
 // Config is a configuration element for the schema registry client
 type Config struct {
-	APIConfig  clients.APIConfig
-	SchemaPath string
+	APICredentials clients.APICredentials
+	SchemaPath     string
 }
 
 // Client is a struct for schemaregistry client

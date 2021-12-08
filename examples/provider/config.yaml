@@ -5,22 +5,22 @@ metadata:
   name: confluent-provider-secret
 type: Opaque
 data:
-  apiKeys:
-    - name: schema-controller
-      apiKey: xyz
-      apiSecret: zyx
-    - name: my-controller
-      apiKey: xyz
-      apiSecret: zyx
+  apiCredentials:
+    - identifier: schemaregistry.confluent.crossplane.io/v1alpha1
+      key: xyz
+      secret: zyx
 ---
 apiVersion: confluent.crossplane.io/v1alpha1
 kind: ProviderConfig
 metadata:
   name: confluent-provider
 spec: 
-  apiKeys:
-    source: Secret
+  credentials:    
+    source: Environment
+    env: 
+      name: CONFLUENT_PROVIDER_CREDENTIALS
+  apiCredentials:
     secretRef:
       namespace: crossplane-system
       name: confluent-provider-secret
-      key: apiKeys
+      key: apiCredentials
