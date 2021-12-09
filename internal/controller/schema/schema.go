@@ -43,11 +43,12 @@ import (
 )
 
 const (
-	errNotMyType    = "managed resource is not a Schema custom resource"
-	errTrackPCUsage = "cannot track ProviderConfig usage"
-	errGetPC        = "cannot get ProviderConfig"
-	errGetCreds     = "cannot get credentials"
-	errNewClient    = "cannot create new Service"
+	errNotMyType       = "managed resource is not a Schema custom resource"
+	errTrackPCUsage    = "cannot track ProviderConfig usage"
+	errGetPC           = "cannot get ProviderConfig"
+	errGetCreds        = "cannot get credentials"
+	errNewClient       = "cannot create new Service"
+	errAuthCredentials = "invalid client credentials"
 )
 
 var (
@@ -55,7 +56,7 @@ var (
 		credParts := strings.Split(string(clientCreds), ":")
 
 		if len(credParts) != 2 {
-			return nil, errors.New("Invalid client credentials")
+			return nil, errors.New(errAuthCredentials)
 		}
 
 		cClient := confluentClient.NewClient()
