@@ -18,7 +18,7 @@ spec:
   credentials:    
     source: Environment
     env: 
-      name: CONFLUENT_PROVIDER_CREDENTIALS
+      name: CONFLUENT_PROVIDER_CREDENTIALS #(password:email)
   apiCredentials:
     secretRef:
       namespace: crossplane-system
