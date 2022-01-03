@@ -2,6 +2,7 @@ package schemaregistry
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -10,6 +11,13 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/dfds/provider-confluent/internal/clients/schemaregistry/commands"
+)
+
+const (
+	ErrNotFound        = "schema not found"
+	errNotParsed       = "cannot be parsed"
+	errGeneral         = "unknown error:"
+	errInvalidResponse = "invalid response from describe"
 )
 
 // NewClient is a factory method for schemaregistry client
@@ -56,14 +64,12 @@ func (c *Client) SchemaDescribe(subject string, version string, environment stri
 		return schema, cmdErr
 	}
 
-	cmdOutputString := string(cmdOutput)
-	split := strings.SplitN(cmdOutputString, ":", 2)
-
-	if len(split) > 2 {
-		return schema, errors.New("Invalid response from Describe")
+	split, err := responseSanitiser(cmdOutput)
+	if err != nil {
+		return schema, err
 	}
 
-	err := json.Unmarshal([]byte(split[1]), &schema)
+	err = json.Unmarshal([]byte(split[1]), &schema)
 
 	return schema, err
 }
@@ -79,4 +85,38 @@ func executeCommand(cmd exec.Cmd) ([]byte, error) {
 	}
 
 	return out, err
+}
+
+func errorParser(cmdout []byte) error {
+	split, err := responseSanitiser(cmdout)
+	if err != nil {
+		return err
+	}
+
+	var schema errorResponse
+	err = json.Unmarshal([]byte(split[1]), &schema)
+
+	if err != nil {
+		return err
+	}
+
+	if schema.ErrorCode == 40401 {
+		return errors.New(errNotFound)
+	}
+
+	return errors.New(fmt.Sprintf("%s%d%s", errGeneral, schema.ErrorCode, schema.Message))
+}
+
+func responseSanitiser(cmdoutput []byte) ([]string, error) {
+	out := string(cmdoutput)
+	split := strings.SplitN(out, ":", 2)
+	if len(split) > 2 {
+		return []string{}, errors.New(errInvalidResponse)
+	}
+	return split, nil
+}
+
+type errorResponse struct {
+	ErrorCode int64  `json:"error_code"`
+	Message   string `json:"message"`
 }

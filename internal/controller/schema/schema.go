@@ -18,6 +18,7 @@ package schema
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -39,6 +40,7 @@ import (
 
 	"github.com/dfds/provider-confluent/internal/clients"
 	confluentClient "github.com/dfds/provider-confluent/internal/clients"
+	"github.com/dfds/provider-confluent/internal/clients/schemaregistry"
 	schemaregistryClient "github.com/dfds/provider-confluent/internal/clients/schemaregistry"
 )
 
@@ -49,6 +51,8 @@ const (
 	errGetCreds        = "cannot get credentials"
 	errNewClient       = "cannot create new Service"
 	errAuthCredentials = "invalid client credentials"
+	errUnmarshalState  = "kubernetes state mismatch with type"
+	errCreateSchema    = "cannot create schema"
 )
 
 var (
@@ -165,8 +169,32 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
 	}
 
-	// These fmt statements should be removed in the real implementation.
-	fmt.Printf("Observing: %+v", cr)
+	// Confluent
+	var client = c.service.(schemaregistry.IClient)
+	ccschema, err := client.SchemaDescribe(cr.Spec.ForProvider.Subject, "latest", cr.Spec.ForProvider.Environment)
+
+	if err != nil {
+		if err.Error() == schemaregistry.ErrNotFound {
+			return managed.ExternalObservation{
+				ResourceExists:    false,
+				ConnectionDetails: managed.ConnectionDetails{},
+			}, nil // returning nil because we want create on not found
+		} else {
+			return managed.ExternalObservation{
+				ResourceExists:    false,
+				ConnectionDetails: managed.ConnectionDetails{},
+			}, err
+		}
+	}
+
+	_ = ccschema
+
+	// Kubernetes
+	var k8sschema schemaregistry.SchemaDescribeResponse
+	err = json.Unmarshal([]byte(cr.Spec.ForProvider.Schema), &k8sschema)
+	if err != nil {
+		errors.Wrap(err, errUnmarshalState)
+	}
 
 	return managed.ExternalObservation{
 		// Return false when the external resource does not exist. This lets
@@ -191,7 +219,15 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
 	}
 
-	fmt.Printf("Creating: %+v", cr)
+	fmt.Println("CREATING!!!!!!!")
+
+	var client = c.service.(schemaregistry.IClient)
+	out, err := client.SchemaCreate(cr.Spec.ForProvider.Subject, cr.Spec.ForProvider.Schema, cr.Spec.ForProvider.SchemaType, cr.Spec.ForProvider.Environment)
+
+	_ = out
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
 
 	return managed.ExternalCreation{
 		// Optionally return any details that may be required to connect to the
