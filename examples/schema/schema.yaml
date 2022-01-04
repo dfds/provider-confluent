@@ -1,11 +1,12 @@
 apiVersion: schemaregistry.confluent.crossplane.io/v1alpha1
 kind: Schema
 metadata:
-  name: my-schema
+  name: confluent-provider
 spec:
   forProvider:
     subject: test-subject
-    schema: '{"type" : "record", "namespace" : "Example", "name" : "Employee", "fields" : [{"name" : "Name", "type" : "string"}, {"name" : "Age", "type" : "int"}]}'
+    compatibility: BACKWARD
+    schema: '{"type" : "record", "namespace" : "Example", "name" : "Employee", "fields" : [{"name" : "Name", "type" : "string"}, {"name" : "Age", "type" : "int"}, {"name": "Gender", "type": "string"}, {"name": "HairLenght", "type": "int"}]}'
     schemaType: AVRO
     environment: env-zvzz7
   providerConfigRef:

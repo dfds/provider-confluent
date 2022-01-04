@@ -11,18 +11,20 @@ import (
 
 // SchemaParameters are the configurable fields of a Schema.
 type SchemaParameters struct {
-	Subject     string `json:"subject"`
-	Schema      string `json:"schema"`
-	SchemaType  string `json:"schemaType"`
-	Environment string `json:"environment"`
+	Subject       string `json:"subject"`
+	Compatibility string `json:"compatibility"`
+	Schema        string `json:"schema"`
+	SchemaType    string `json:"schemaType"`
+	Environment   string `json:"environment"`
 }
 
 // SchemaObservation are the observable fields of a Schema.
 type SchemaObservation struct {
-	Subject     string `json:"subject,omitempty"`
-	Schema      string `json:"schema,omitempty"`
-	SchemaType  string `json:"schemaType,omitempty"`
-	Environment string `json:"environment,omitempty"`
+	Subject       string `json:"subject,omitempty"`
+	Compatibility string `json:"compatibility,omitempty"`
+	Schema        string `json:"schema,omitempty"`
+	SchemaType    string `json:"schemaType,omitempty"`
+	Environment   string `json:"environment,omitempty"`
 }
 
 // SchemaSpec defines the desired state of a Schema.
@@ -49,9 +51,8 @@ type SchemaStatus struct {
 type Schema struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   SchemaSpec   `json:"spec"`
-	Status SchemaStatus `json:"status,omitempty"`
+	Spec              SchemaSpec   `json:"spec"`
+	Status            SchemaStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

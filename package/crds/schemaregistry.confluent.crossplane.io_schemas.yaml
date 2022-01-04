@@ -65,6 +65,8 @@ spec:
               forProvider:
                 description: SchemaParameters are the configurable fields of a Schema.
                 properties:
+                  compatibility:
+                    type: string
                   environment:
                     type: string
                   schema:
@@ -74,6 +76,7 @@ spec:
                   subject:
                     type: string
                 required:
+                - compatibility
                 - environment
                 - schema
                 - schemaType
@@ -129,6 +132,8 @@ spec:
               atProvider:
                 description: SchemaObservation are the observable fields of a Schema.
                 properties:
+                  compatibility:
+                    type: string
                   environment:
                     type: string
                   schema:

@@ -7,6 +7,7 @@ type IClient interface {
 	SchemaCreate(subject string, schema string, schemaType string, environment string) (string, error)
 	SchemaDelete(subject string, version string, permanent bool, environment string) (string, error)
 	SchemaDescribe(subject string, version string, environment string) (SchemaDescribeResponse, error)
+	SchemaSubjectUpdateCommand(subject string, compatibility string, environment string) (string, error)
 }
 
 // Config is a configuration element for the schema registry client

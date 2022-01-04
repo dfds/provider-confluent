@@ -1,0 +1,24 @@
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   namespace: crossplane-system
+#   name: confluent-provider-secret
+# type: Opaque
+# data:
+#   apiCredentials: YOUR_BASE64_ENCODED_CREDS
+
+---
+apiVersion: confluent.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: confluent-provider
+spec:
+  credentials:
+    source: Environment
+    env:
+      name: CONFLUENT_PROVIDER_CREDENTIALS #(email:password)
+  apiCredentials:
+    - identifier: schemaregistry.confluent.crossplane.io/v1alpha1
+      key: ${CONFLUENT_PROVIDER_API_KEY}
+      secret: ${CONFLUENT_PROVIDER_API_SECRET}

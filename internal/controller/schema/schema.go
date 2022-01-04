@@ -19,7 +19,7 @@ package schema
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -53,6 +53,10 @@ const (
 	errAuthCredentials = "invalid client credentials"
 	errUnmarshalState  = "kubernetes state mismatch with type"
 	errCreateSchema    = "cannot create schema"
+)
+
+const (
+	permanent = false
 )
 
 var (
@@ -196,6 +200,15 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		errors.Wrap(err, errUnmarshalState)
 	}
 
+	// Diff
+	if !reflect.DeepEqual(k8sschema, ccschema) {
+		return managed.ExternalObservation{
+			ResourceExists:    true,
+			ResourceUpToDate:  false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, nil
+	}
+
 	return managed.ExternalObservation{
 		// Return false when the external resource does not exist. This lets
 		// the managed resource reconciler know that it needs to call Create to
@@ -219,12 +232,15 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
 	}
 
-	fmt.Println("CREATING!!!!!!!")
-
 	var client = c.service.(schemaregistry.IClient)
-	out, err := client.SchemaCreate(cr.Spec.ForProvider.Subject, cr.Spec.ForProvider.Schema, cr.Spec.ForProvider.SchemaType, cr.Spec.ForProvider.Environment)
+	_, err := client.SchemaCreate(cr.Spec.ForProvider.Subject, cr.Spec.ForProvider.Schema, cr.Spec.ForProvider.SchemaType, cr.Spec.ForProvider.Environment)
 
-	_ = out
+	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+
+	_, err = client.SchemaSubjectUpdateCommand(cr.Spec.ForProvider.Subject, cr.Spec.ForProvider.Compatibility, cr.Spec.ForProvider.Environment)
+
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -242,7 +258,13 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errNotMyType)
 	}
 
-	fmt.Printf("Updating: %+v", cr)
+	var client = c.service.(schemaregistry.IClient)
+
+	_, err := client.SchemaCreate(cr.Spec.ForProvider.Subject, cr.Spec.ForProvider.Schema, cr.Spec.ForProvider.SchemaType, cr.Spec.ForProvider.Environment)
+
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
 
 	return managed.ExternalUpdate{
 		// Optionally return any details that may be required to connect to the
@@ -257,7 +279,16 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotMyType)
 	}
 
-	fmt.Printf("Deleting: %+v", cr)
+	var client = c.service.(schemaregistry.IClient)
+
+	_, err := client.SchemaDelete(cr.Spec.ForProvider.Subject, "all", false, cr.Spec.ForProvider.Environment)
+	if err != nil {
+		return err
+	}
+	_, err = client.SchemaDelete(cr.Spec.ForProvider.Subject, "all", true, cr.Spec.ForProvider.Environment)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
