@@ -13,7 +13,7 @@ type ServiceAccountCreateCommand exec.Cmd
 func NewServiceAccountCreateCommand(name string, description string) ServiceAccountCreateCommand {
 	var command = ServiceAccountCreateCommand{
 		Path: clients.CliName,
-		Args: []string{"iam", "service-accont", "create", name, "--description", description, "-o", "json"},
+		Args: []string{"iam", "service-account", "create", name, "--description", description, "-o", "json"},
 	}
 
 	return command

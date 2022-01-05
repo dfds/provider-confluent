@@ -13,7 +13,7 @@ type ServiceAccountListCommand exec.Cmd
 func NewServiceAccountListCommand() ServiceAccountListCommand {
 	var command = ServiceAccountListCommand{
 		Path: clients.CliName,
-		Args: []string{"iam", "service-accont", "list", "-o", "json"},
+		Args: []string{"iam", "service-account", "list", "-o", "json"},
 	}
 
 	return command

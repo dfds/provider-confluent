@@ -13,7 +13,7 @@ type ServiceAccountDeleteCommand exec.Cmd
 func NewServiceAccountDeleteCommand(id string) ServiceAccountDeleteCommand {
 	var command = ServiceAccountDeleteCommand{
 		Path: clients.CliName,
-		Args: []string{"iam", "service-accont", "delete", id},
+		Args: []string{"iam", "service-account", "delete", id},
 	}
 
 	return command

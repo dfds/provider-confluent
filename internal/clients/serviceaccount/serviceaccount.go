@@ -59,7 +59,7 @@ func (c *Client) ServiceAccountCreate(name string, description string) (ServiceA
 	return resp, nil
 }
 
-func (c *Client) ServiceAccountList(name string) (ServiceAccount, error) {
+func (c *Client) ServiceAccountList(id string) (ServiceAccount, error) {
 	var cmd = commands.NewServiceAccountListCommand()
 	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
 
@@ -74,7 +74,7 @@ func (c *Client) ServiceAccountList(name string) (ServiceAccount, error) {
 	}
 
 	for _, v := range resp {
-		if v.Name == name {
+		if v.Id == id {
 			return v, nil
 		}
 	}

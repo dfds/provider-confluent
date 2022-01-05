@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	schemav1alpha1 "github.com/dfds/provider-confluent/apis/schema/v1alpha1"
+	serviceaccountv1alpha1 "github.com/dfds/provider-confluent/apis/serviceaccount/v1alpha1"
 	confluentv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
 )
 
@@ -29,6 +30,7 @@ func init() {
 	AddToSchemes = append(AddToSchemes,
 		confluentv1alpha1.SchemeBuilder.AddToScheme,
 		schemav1alpha1.SchemeBuilder.AddToScheme,
+		serviceaccountv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

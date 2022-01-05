@@ -13,7 +13,7 @@ type ServiceAccountUpdateCommand exec.Cmd
 func NewServiceAccountUpdateCommand(id string, description string) ServiceAccountUpdateCommand {
 	var command = ServiceAccountUpdateCommand{
 		Path: clients.CliName,
-		Args: []string{"iam", "service-accont", "update", id, "--description", description},
+		Args: []string{"iam", "service-account", "update", id, "--description", description},
 	}
 
 	return command
