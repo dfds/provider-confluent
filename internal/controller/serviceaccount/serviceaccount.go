@@ -18,7 +18,6 @@ package serviceaccount
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/google/go-cmp/cmp"
@@ -170,7 +169,6 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// Confluent
 	var client = c.service.(serviceaccount.IClient)
 	ccsa, err := client.ServiceAccountList(cr.Status.AtProvider.Id)
-	fmt.Println("LORT!!!!:", ccsa)
 
 	if err != nil {
 		if err.Error() == serviceaccount.ErrNotExists {
@@ -195,14 +193,6 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
-	if cr.Spec.ForProvider.Name != ccsa.Name {
-		return managed.ExternalObservation{
-			ResourceExists:    true,
-			ResourceUpToDate:  false,
-			ConnectionDetails: managed.ConnectionDetails{},
-		}, nil
-	}
-
 	return managed.ExternalObservation{
 		ResourceExists:    true,
 		ResourceUpToDate:  true,
@@ -217,7 +207,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	var client = c.service.(serviceaccount.IClient)
-	out, err := client.ServiceAccountCreate(cr.Spec.ForProvider.Name, cr.Spec.ForProvider.Description)
+	out, err := client.ServiceAccountCreate(cr.Name, cr.Spec.ForProvider.Description)
 
 	if err != nil {
 		return managed.ExternalCreation{}, err
