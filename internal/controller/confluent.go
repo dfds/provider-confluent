@@ -24,6 +24,7 @@ import (
 
 	"github.com/dfds/provider-confluent/internal/controller/config"
 	"github.com/dfds/provider-confluent/internal/controller/schema"
+	"github.com/dfds/provider-confluent/internal/controller/serviceaccount"
 )
 
 // Setup creates all controllers with the supplied logger and adds them to
@@ -32,6 +33,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
 		config.Setup,
 		schema.Setup,
+		serviceaccount.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

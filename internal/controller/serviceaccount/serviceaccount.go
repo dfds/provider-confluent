@@ -14,14 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package schema
+package serviceaccount
 
 import (
 	"context"
-	"encoding/json"
-	"reflect"
 	"strings"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
@@ -35,13 +34,13 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 
-	"github.com/dfds/provider-confluent/apis/schema/v1alpha1"
+	"github.com/dfds/provider-confluent/apis/serviceaccount/v1alpha1"
 	apisv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
 
 	"github.com/dfds/provider-confluent/internal/clients"
 	confluentClient "github.com/dfds/provider-confluent/internal/clients"
-	"github.com/dfds/provider-confluent/internal/clients/schemaregistry"
-	schemaregistryClient "github.com/dfds/provider-confluent/internal/clients/schemaregistry"
+	"github.com/dfds/provider-confluent/internal/clients/serviceaccount"
+	serviceaccountClient "github.com/dfds/provider-confluent/internal/clients/serviceaccount"
 )
 
 const (
@@ -52,11 +51,6 @@ const (
 	errNewClient       = "cannot create new Service"
 	errAuthCredentials = "invalid client credentials"
 	errUnmarshalState  = "kubernetes state mismatch with type"
-	errCreateSchema    = "cannot create schema"
-)
-
-const (
-	permanent = false
 )
 
 var (
@@ -74,26 +68,24 @@ var (
 			return nil, authErr
 		}
 
-		srConfig := schemaregistryClient.Config{
+		srConfig := serviceaccountClient.Config{
 			APICredentials: apiCreds,
-			//TODO: This should be inferred from somewhere else (== not hardcoded)
-			SchemaPath: "/tmp",
 		}
 
-		return schemaregistryClient.NewClient(srConfig).(interface{}), nil
+		return serviceaccountClient.NewClient(srConfig).(interface{}), nil
 	}
 )
 
-// Setup adds a controller that reconciles Schema managed resources.
+// Setup adds a controller that reconciles ServiceAccount managed resources.
 func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
-	name := managed.ControllerName(v1alpha1.SchemaGroupKind)
+	name := managed.ControllerName(v1alpha1.ServiceAccountGroupKind)
 
 	o := controller.Options{
 		RateLimiter: ratelimiter.NewDefaultManagedRateLimiter(rl),
 	}
 
 	r := managed.NewReconciler(mgr,
-		resource.ManagedKind(v1alpha1.SchemaGroupVersionKind),
+		resource.ManagedKind(v1alpha1.ServiceAccountGroupVersionKind),
 		managed.WithExternalConnecter(&connector{
 			kube:         mgr.GetClient(),
 			usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &apisv1alpha1.ProviderConfigUsage{}),
@@ -104,7 +96,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		WithOptions(o).
-		For(&v1alpha1.Schema{}).
+		For(&v1alpha1.ServiceAccount{}).
 		Complete(r)
 }
 
@@ -122,7 +114,7 @@ type connector struct {
 // 3. Getting the credentials specified by the ProviderConfig.
 // 4. Using the credentials to form a client.
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.Schema)
+	cr, ok := mg.(*v1alpha1.ServiceAccount)
 	if !ok {
 		return nil, errors.New(errNotMyType)
 	}
@@ -156,7 +148,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errNewClient)
 	}
 
-	return &external{service: svc}, nil
+	return &external{service: svc, kube: c.kube}, nil
 }
 
 // An ExternalClient observes, then either creates, updates, or deletes an
@@ -165,20 +157,21 @@ type external struct {
 	// A 'client' used to connect to the external resource API. In practice this
 	// would be something like an AWS SDK client.
 	service interface{}
+	kube    client.Client
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*v1alpha1.Schema)
+	cr, ok := mg.(*v1alpha1.ServiceAccount)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
 	}
 
 	// Confluent
-	var client = c.service.(schemaregistry.IClient)
-	ccschema, err := client.SchemaDescribe(cr.Spec.ForProvider.Subject, "latest", cr.Spec.ForProvider.Environment)
+	var client = c.service.(serviceaccount.IClient)
+	ccsa, err := client.ServiceAccountList(cr.Spec.ForProvider.Name)
 
 	if err != nil {
-		if err.Error() == schemaregistry.ErrNotFound {
+		if err.Error() == serviceaccount.ErrNotExists {
 			return managed.ExternalObservation{
 				ResourceExists:    false,
 				ConnectionDetails: managed.ConnectionDetails{},
@@ -191,15 +184,8 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}
 	}
 
-	// Kubernetes
-	var k8sschema schemaregistry.SchemaDescribeResponse
-	err = json.Unmarshal([]byte(cr.Spec.ForProvider.Schema), &k8sschema)
-	if err != nil {
-		errors.Wrap(err, errUnmarshalState)
-	}
-
 	// Diff
-	if !reflect.DeepEqual(k8sschema, ccschema) {
+	if cr.Spec.ForProvider.Description != ccsa.Description {
 		return managed.ExternalObservation{
 			ResourceExists:    true,
 			ResourceUpToDate:  false,
@@ -208,39 +194,35 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	return managed.ExternalObservation{
-		// Return false when the external resource does not exist. This lets
-		// the managed resource reconciler know that it needs to call Create to
-		// (re)create the resource, or that it has successfully been deleted.
-		ResourceExists: true,
-
-		// Return false when the external resource exists, but it not up to date
-		// with the desired managed resource state. This lets the managed
-		// resource reconciler know that it needs to call Update.
-		ResourceUpToDate: true,
-
-		// Return any details that may be required to connect to the external
-		// resource. These will be stored as the connection secret.
+		ResourceExists:    true,
+		ResourceUpToDate:  true,
 		ConnectionDetails: managed.ConnectionDetails{},
 	}, nil
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.Schema)
+	cr, ok := mg.(*v1alpha1.ServiceAccount)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
 	}
 
-	var client = c.service.(schemaregistry.IClient)
-	_, err := client.SchemaCreate(cr.Spec.ForProvider.Subject, cr.Spec.ForProvider.Schema, cr.Spec.ForProvider.SchemaType, cr.Spec.ForProvider.Environment)
+	var client = c.service.(serviceaccount.IClient)
+	out, err := client.ServiceAccountCreate(cr.Spec.ForProvider.Name, cr.Spec.ForProvider.Description)
 
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
-	_, err = client.SchemaSubjectUpdateCommand(cr.Spec.ForProvider.Subject, cr.Spec.ForProvider.Compatibility, cr.Spec.ForProvider.Environment)
+	current := cr.Status.DeepCopy()
+	cr.Status.AtProvider.Id = out.Id
 
-	if err != nil {
-		return managed.ExternalCreation{}, err
+	if !cmp.Equal(current, &cr.Status) {
+		err = c.kube.Update(ctx, cr)
+		if err != nil {
+			return managed.ExternalCreation{
+				ConnectionDetails: managed.ConnectionDetails{},
+			}, err
+		}
 	}
 
 	return managed.ExternalCreation{
@@ -251,14 +233,14 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.Schema)
+	cr, ok := mg.(*v1alpha1.ServiceAccount)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotMyType)
 	}
 
-	var client = c.service.(schemaregistry.IClient)
+	var client = c.service.(serviceaccount.IClient)
 
-	_, err := client.SchemaCreate(cr.Spec.ForProvider.Subject, cr.Spec.ForProvider.Schema, cr.Spec.ForProvider.SchemaType, cr.Spec.ForProvider.Environment)
+	err := client.ServiceAccountUpdate(cr.Status.AtProvider.Id, cr.Spec.ForProvider.Description)
 
 	if err != nil {
 		return managed.ExternalUpdate{}, err
@@ -272,18 +254,14 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.Schema)
+	cr, ok := mg.(*v1alpha1.ServiceAccount)
 	if !ok {
 		return errors.New(errNotMyType)
 	}
 
-	var client = c.service.(schemaregistry.IClient)
+	var client = c.service.(serviceaccount.IClient)
 
-	_, err := client.SchemaDelete(cr.Spec.ForProvider.Subject, "all", false, cr.Spec.ForProvider.Environment)
-	if err != nil {
-		return err
-	}
-	_, err = client.SchemaDelete(cr.Spec.ForProvider.Subject, "all", true, cr.Spec.ForProvider.Environment)
+	err := client.ServiceAccountDelete(cr.Status.AtProvider.Id)
 	if err != nil {
 		return err
 	}

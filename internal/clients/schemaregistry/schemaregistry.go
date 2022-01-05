@@ -3,13 +3,13 @@ package schemaregistry
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
+	"github.com/dfds/provider-confluent/internal/clients"
 	"github.com/dfds/provider-confluent/internal/clients/schemaregistry/commands"
 )
 
@@ -39,7 +39,7 @@ func (c *Client) SchemaCreate(subject string, schema string, schemaType string, 
 	}
 
 	var cmd = commands.NewSchemaCreateCommand(subject, path, schemaType, environment, c.Config.APICredentials.Key, c.Config.APICredentials.Secret)
-	var cmdOutput, cmdErr = executeCommand(exec.Cmd(cmd))
+	var cmdOutput, cmdErr = clients.ExecuteCommand(exec.Cmd(cmd))
 
 	err = RemoveFile(path) // TODO: consider implementing with defer
 
@@ -58,7 +58,7 @@ func (c *Client) SchemaCreate(subject string, schema string, schemaType string, 
 // SchemaDelete deletes a schema in the schemaregistry
 func (c *Client) SchemaDelete(subject string, version string, permanent bool, environment string) (string, error) {
 	var cmd = commands.NewSchemaDeleteCommand(subject, version, permanent, environment, c.Config.APICredentials.Key, c.Config.APICredentials.Secret)
-	var cmdOutput, cmdErr = executeCommand(exec.Cmd(cmd))
+	var cmdOutput, cmdErr = clients.ExecuteCommand(exec.Cmd(cmd))
 
 	return string(cmdOutput), cmdErr
 }
@@ -66,7 +66,7 @@ func (c *Client) SchemaDelete(subject string, version string, permanent bool, en
 // SchemaDescribe gets a schema in the schemaregistry
 func (c *Client) SchemaDescribe(subject string, version string, environment string) (SchemaDescribeResponse, error) {
 	var cmd = commands.NewSchemaDescribeCommand(subject, version, environment, c.Config.APICredentials.Key, c.Config.APICredentials.Secret)
-	var cmdOutput, err = executeCommand(exec.Cmd(cmd))
+	var cmdOutput, err = clients.ExecuteCommand(exec.Cmd(cmd))
 	var schema SchemaDescribeResponse
 
 	if err != nil {
@@ -87,26 +87,13 @@ func (c *Client) SchemaDescribe(subject string, version string, environment stri
 
 func (c *Client) SchemaSubjectUpdateCommand(subject string, compatibility string, environment string) (string, error) {
 	var cmd = commands.NewSchemaSubjectUpdateCommand(subject, compatibility, environment, c.Config.APICredentials.Key, c.Config.APICredentials.Secret)
-	cmdOutput, err := executeCommand(exec.Cmd(cmd))
+	cmdOutput, err := clients.ExecuteCommand(exec.Cmd(cmd))
 
 	if err != nil {
 		return string(cmdOutput), errorParser(cmdOutput)
 	}
 
 	return string(cmdOutput), nil
-}
-
-func executeCommand(cmd exec.Cmd) ([]byte, error) {
-	execCmd := exec.Command(cmd.Path, cmd.Args...) //nolint:gosec
-	execCmd.Env = os.Environ()
-
-	out, err := execCmd.CombinedOutput()
-
-	if err != nil {
-		return out, err
-	}
-
-	return out, err
 }
 
 func errorParser(cmdout []byte) error {

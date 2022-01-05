@@ -20,13 +20,13 @@ metadata:
       [slack.crossplane.io](https://slack.crossplane.io) and create an issue in
       the [dfds/provider-confluent](https://github.com/dfds/provider-confluent)
       repo.
-    
+
     friendly-name.meta.crossplane.io: Provider Confluent
-    
+
     friendly-group-name.meta.crossplane.io/schemaregistry.confluent.crossplane.io: SchemaRegistry
-    
+
     friendly-kind-name.meta.crossplane.io/schema.schemaregistry.confluent.crossplane.io: Schema
-    
+
 spec:
   controller:
     image: DOCKER_REGISTRY/provider-confluent:VERSION
