@@ -167,7 +167,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	// Confluent
 	var client = c.service.(serviceaccount.IClient)
-	ccsa, err := client.ServiceAccountById(cr.Status.AtProvider.Id)
+	ccsa, err := client.ServiceAccountByName(cr.Name)
 
 	if err != nil {
 		if err.Error() == serviceaccount.ErrNotExists {
