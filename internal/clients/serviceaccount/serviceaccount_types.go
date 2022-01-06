@@ -6,7 +6,9 @@ import "github.com/dfds/provider-confluent/internal/clients"
 type IClient interface {
 	ServiceAccountCreate(name string, description string) (ServiceAccount, error)
 	ServiceAccountDelete(id string) error
-	ServiceAccountList(name string) (ServiceAccount, error)
+	ServiceAccountList() ([]ServiceAccount, error)
+	ServiceAccountByName(name string) (ServiceAccount, error)
+	ServiceAccountById(id string) (ServiceAccount, error)
 	ServiceAccountUpdate(id string, description string) error
 }
 

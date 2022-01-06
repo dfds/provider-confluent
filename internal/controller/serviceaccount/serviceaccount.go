@@ -20,6 +20,11 @@ import (
 	"context"
 	"strings"
 
+	"github.com/crossplane/crossplane-runtime/pkg/event"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
@@ -28,12 +33,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/event"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
-	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
-
 	"github.com/dfds/provider-confluent/apis/serviceaccount/v1alpha1"
 	apisv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
 
@@ -168,7 +167,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	// Confluent
 	var client = c.service.(serviceaccount.IClient)
-	ccsa, err := client.ServiceAccountList(cr.Name)
+	ccsa, err := client.ServiceAccountById(cr.Status.AtProvider.Id)
 
 	if err != nil {
 		if err.Error() == serviceaccount.ErrNotExists {
@@ -239,7 +238,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	var client = c.service.(serviceaccount.IClient)
 
 	// Get Id
-	ccsa, err := client.ServiceAccountList(cr.Name)
+	ccsa, err := client.ServiceAccountByName(cr.Name)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
@@ -266,7 +265,7 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 	var client = c.service.(serviceaccount.IClient)
 
 	// Get Id
-	ccsa, err := client.ServiceAccountList(cr.Name)
+	ccsa, err := client.ServiceAccountByName(cr.Name)
 	if err != nil {
 		return err
 	}

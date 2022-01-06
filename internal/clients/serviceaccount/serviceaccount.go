@@ -59,7 +59,24 @@ func (c *Client) ServiceAccountCreate(name string, description string) (ServiceA
 	return resp, nil
 }
 
-func (c *Client) ServiceAccountList(name string) (ServiceAccount, error) {
+func (c *Client) ServiceAccountList() ([]ServiceAccount, error) {
+	var cmd = commands.NewServiceAccountListCommand()
+	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+
+	if err != nil {
+		return []ServiceAccount{}, errors.Wrap(err, string(out))
+	}
+
+	var resp ServiceAccountList
+	err = json.Unmarshal(out, &resp)
+	if err != nil {
+		return []ServiceAccount{}, err
+	}
+
+	return resp, errors.New(ErrNotExists)
+}
+
+func (c *Client) ServiceAccountById(id string) (ServiceAccount, error) {
 	var cmd = commands.NewServiceAccountListCommand()
 	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
 
@@ -74,7 +91,30 @@ func (c *Client) ServiceAccountList(name string) (ServiceAccount, error) {
 	}
 
 	for _, v := range resp {
-		if v.Name == name {
+		if v.Id == id {
+			return v, nil
+		}
+	}
+
+	return ServiceAccount{}, errors.New(ErrNotExists)
+}
+
+func (c *Client) ServiceAccountByName(name string) (ServiceAccount, error) {
+	var cmd = commands.NewServiceAccountListCommand()
+	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+
+	if err != nil {
+		return ServiceAccount{}, errors.Wrap(err, string(out))
+	}
+
+	var resp ServiceAccountList
+	err = json.Unmarshal(out, &resp)
+	if err != nil {
+		return ServiceAccount{}, err
+	}
+
+	for _, v := range resp {
+		if strings.ToLower(v.Name) == strings.ToLower(name) {
 			return v, nil
 		}
 	}
