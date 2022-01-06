@@ -43,13 +43,12 @@ import (
 )
 
 const (
-	errNotMyType       = "managed resource is not a Schema custom resource"
+	errNotMyType       = "managed resource is not a ServiceAccount custom resource"
 	errTrackPCUsage    = "cannot track ProviderConfig usage"
 	errGetPC           = "cannot get ProviderConfig"
 	errGetCreds        = "cannot get credentials"
 	errNewClient       = "cannot create new Service"
 	errAuthCredentials = "invalid client credentials"
-	errUnmarshalState  = "kubernetes state mismatch with type"
 )
 
 var (
@@ -216,9 +215,14 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	var client = c.service.(serviceaccount.IClient)
-	_, err := client.ServiceAccountCreate(cr.Name, cr.Spec.ForProvider.Description) // takes time
+	out, err := client.ServiceAccountCreate(cr.Name, cr.Spec.ForProvider.Description) // takes time
 
 	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+
+	cr.Status.AtProvider.Id = out.Id
+	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
@@ -237,14 +241,8 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	var client = c.service.(serviceaccount.IClient)
 
-	// Get Id
-	ccsa, err := client.ServiceAccountByName(cr.Name)
-	if err != nil {
-		return managed.ExternalUpdate{}, err
-	}
-
 	// Update description
-	err = client.ServiceAccountUpdate(ccsa.Id, cr.Spec.ForProvider.Description)
+	err := client.ServiceAccountUpdate(cr.Status.AtProvider.Id, cr.Spec.ForProvider.Description)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
@@ -262,21 +260,15 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return errors.New(errNotMyType)
 	}
 
-	var client = c.service.(serviceaccount.IClient)
-
-	// Get Id
-	ccsa, err := client.ServiceAccountByName(cr.Name)
-	if err != nil {
-		return err
-	}
-
-	err = client.ServiceAccountDelete(ccsa.Id)
-	if err != nil {
-		return err
-	}
-
 	cr.Status.SetConditions(xpv1.Deleting())
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
+		return err
+	}
+
+	var client = c.service.(serviceaccount.IClient)
+
+	err := client.ServiceAccountDelete(cr.Status.AtProvider.Id)
+	if err != nil {
 		return err
 	}
 

@@ -11,15 +11,12 @@ import (
 
 // ServiceAccountParameters are the configurable fields of a ServiceAccount.
 type ServiceAccountParameters struct {
-	// Name        string `json:"name"`
 	Description string `json:"description"`
 }
 
 // ServiceAccountObservation are the observable fields of a ServiceAccount.
 type ServiceAccountObservation struct {
-	// Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-	Id          string `json:"id,omitempty"`
+	Id string `json:"id,omitempty"`
 }
 
 // ServiceAccountSpec defines the desired state of a ServiceAccount.
