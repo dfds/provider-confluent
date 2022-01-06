@@ -17,8 +17,9 @@ helm install crossplane --namespace crossplane-system crossplane-stable/crosspla
 # Setup build dependencies
 make submodules
 
-# Start dev
-make dev
+# Generate crds
+make generate
+kubectl apply -f package/crds/ -R
 
 # Install provider config
 envsubst < examples/provider/config.yaml | kubectl apply -f -

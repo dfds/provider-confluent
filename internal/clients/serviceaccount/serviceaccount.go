@@ -24,7 +24,7 @@ const (
 	descriptionMaxLength = 128
 )
 
-// NewClient is a factory method for schemaregistry client
+// NewClient is a factory method for serviceaccount client
 func NewClient(c Config) IClient {
 	return &Client{Config: c}
 }

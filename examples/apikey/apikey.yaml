@@ -1,0 +1,16 @@
+---
+apiVersion: apikey.confluent.crossplane.io/v1alpha1
+kind: ApiKey
+metadata:
+  name: crossplane-test
+spec:
+  forProvider:
+    description: "crossplane-test0"
+    resource: ${CONFLUENT_CLUSTER_ID}
+    environment: ${CONFLUENT_ENVIRONMENT}
+    serviceAccount: ${CONFLUENT_SERVICEACCOUNT}
+  writeConnectionSecretToRef:
+    name: confluent-apikey
+    namespace: default
+  providerConfigRef:
+    name: confluent-provider

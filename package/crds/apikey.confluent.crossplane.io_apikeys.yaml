@@ -6,18 +6,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: serviceaccounts.iam.confluent.crossplane.io
+  name: apikeys.apikey.confluent.crossplane.io
 spec:
-  group: iam.confluent.crossplane.io
+  group: apikey.confluent.crossplane.io
   names:
     categories:
     - crossplane
     - managed
     - confluent
-    kind: ServiceAccount
-    listKind: ServiceAccountList
-    plural: serviceaccounts
-    singular: serviceaccount
+    kind: ApiKey
+    listKind: ApiKeyList
+    plural: apikeys
+    singular: apikey
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -51,7 +51,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ServiceAccountSpec defines the desired state of a ServiceAccount.
+            description: ApiKey Spec defines the desired state of a ApiKey.
             properties:
               deletionPolicy:
                 default: Delete
@@ -63,13 +63,21 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: ServiceAccountParameters are the configurable fields
-                  of a ServiceAccount.
+                description: ApiKeyParameters are the configurable fields of a ApiKey.
                 properties:
                   description:
                     type: string
+                  environment:
+                    type: string
+                  resource:
+                    type: string
+                  serviceAccount:
+                    type: string
                 required:
                 - description
+                - environment
+                - resource
+                - serviceAccount
                 type: object
               providerConfigRef:
                 default:
@@ -116,14 +124,15 @@ spec:
             - forProvider
             type: object
           status:
-            description: ServiceAccountStatus represents the observed state of a ServiceAccount.
+            description: ApiKey Status represents the observed state of a ApiKey.
             properties:
               atProvider:
-                description: ServiceAccountObservation are the observable fields of
-                  a ServiceAccount.
+                description: ApiKeyObservation are the observable fields of a ApiKey.
                 properties:
-                  id:
+                  key:
                     type: string
+                required:
+                - key
                 type: object
               conditions:
                 description: Conditions of the resource.

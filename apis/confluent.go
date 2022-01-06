@@ -20,6 +20,7 @@ package apis
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
+	apikeyv1alpha1 "github.com/dfds/provider-confluent/apis/apikey/v1alpha1"
 	schemav1alpha1 "github.com/dfds/provider-confluent/apis/schema/v1alpha1"
 	serviceaccountv1alpha1 "github.com/dfds/provider-confluent/apis/serviceaccount/v1alpha1"
 	confluentv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
@@ -31,6 +32,7 @@ func init() {
 		confluentv1alpha1.SchemeBuilder.AddToScheme,
 		schemav1alpha1.SchemeBuilder.AddToScheme,
 		serviceaccountv1alpha1.SchemeBuilder.AddToScheme,
+		apikeyv1alpha1.SchemeBuilder.AddToScheme,
 	)
 }
 

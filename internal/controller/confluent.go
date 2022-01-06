@@ -22,6 +22,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 
+	"github.com/dfds/provider-confluent/internal/controller/apikey"
 	"github.com/dfds/provider-confluent/internal/controller/config"
 	"github.com/dfds/provider-confluent/internal/controller/schema"
 	"github.com/dfds/provider-confluent/internal/controller/serviceaccount"
@@ -34,6 +35,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 		config.Setup,
 		schema.Setup,
 		serviceaccount.Setup,
+		apikey.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err
