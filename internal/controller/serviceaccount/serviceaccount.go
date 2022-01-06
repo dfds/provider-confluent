@@ -20,7 +20,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/workqueue"
@@ -168,7 +167,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	// Confluent
 	var client = c.service.(serviceaccount.IClient)
-	ccsa, err := client.ServiceAccountList(cr.Status.AtProvider.Id)
+	ccsa, err := client.ServiceAccountList(cr.Name)
 
 	if err != nil {
 		if err.Error() == serviceaccount.ErrNotExists {
@@ -206,23 +205,15 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
 	}
 
+	// if cr.Status.AtProvider.Id != "" {
+	// 	return managed.ExternalCreation{}, nil
+	// }
+
 	var client = c.service.(serviceaccount.IClient)
-	out, err := client.ServiceAccountCreate(cr.Name, cr.Spec.ForProvider.Description)
+	_, err := client.ServiceAccountCreate(cr.Name, cr.Spec.ForProvider.Description) // takes time
 
 	if err != nil {
 		return managed.ExternalCreation{}, err
-	}
-
-	current := cr.Status.DeepCopy()
-	cr.Status.AtProvider.Id = out.Id
-
-	if !cmp.Equal(current, &cr.Status) {
-		err = c.kube.Update(ctx, cr)
-		if err != nil {
-			return managed.ExternalCreation{
-				ConnectionDetails: managed.ConnectionDetails{},
-			}, err
-		}
 	}
 
 	return managed.ExternalCreation{
@@ -239,8 +230,15 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	var client = c.service.(serviceaccount.IClient)
-	err := client.ServiceAccountUpdate(cr.Status.AtProvider.Id, cr.Spec.ForProvider.Description)
 
+	// Get Id
+	ccsa, err := client.ServiceAccountList(cr.Name)
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
+
+	// Update description
+	err = client.ServiceAccountUpdate(ccsa.Id, cr.Spec.ForProvider.Description)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
@@ -260,7 +258,13 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	var client = c.service.(serviceaccount.IClient)
 
-	err := client.ServiceAccountDelete(cr.Status.AtProvider.Id)
+	// Get Id
+	ccsa, err := client.ServiceAccountList(cr.Name)
+	if err != nil {
+		return err
+	}
+
+	err = client.ServiceAccountDelete(ccsa.Id)
 	if err != nil {
 		return err
 	}
