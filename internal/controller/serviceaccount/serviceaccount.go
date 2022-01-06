@@ -27,6 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
@@ -192,6 +193,11 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
+	cr.Status.SetConditions(xpv1.Available())
+	if err := c.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalObservation{}, err
+	}
+
 	return managed.ExternalObservation{
 		ResourceExists:    true,
 		ResourceUpToDate:  true,
@@ -205,9 +211,10 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
 	}
 
-	// if cr.Status.AtProvider.Id != "" {
-	// 	return managed.ExternalCreation{}, nil
-	// }
+	cr.Status.SetConditions(xpv1.Creating())
+	if err := c.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, err
+	}
 
 	var client = c.service.(serviceaccount.IClient)
 	_, err := client.ServiceAccountCreate(cr.Name, cr.Spec.ForProvider.Description) // takes time
@@ -266,6 +273,11 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	err = client.ServiceAccountDelete(ccsa.Id)
 	if err != nil {
+		return err
+	}
+
+	cr.Status.SetConditions(xpv1.Deleting())
+	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return err
 	}
 
