@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/dfds/provider-confluent/internal/clients"
+	"github.com/stretchr/testify/assert"
 	"go.dfds.cloud/utils/config"
 )
 
@@ -23,12 +24,37 @@ var (
 	client         = NewClient(testConfig)
 )
 
-// Asses
-func TestApiKeyCreate(t *testing.T) {
-	_, err := client.ApiKeyCreate(resource, description, serviceAccount, environment)
+// Asses and assert
+func TestApiKeyLifecycle(t *testing.T) {
+	assert := assert.New(t)
+
+	_, err := client.GetApiKeyByKey("")
 	if err != nil {
-		t.Errorf("api-key creatio not working")
+		assert.Equal(err.Error(), ErrNotExists, "empty key should should return not exists")
+	}
+
+	out, err := client.ApiKeyCreate(resource, description, serviceAccount, environment)
+	if err != nil {
+		t.Errorf("api-key creation not working")
+	}
+
+	_, err = client.GetApiKeyByKey(out.Key)
+	if err != nil {
+		t.Errorf("api-key get by key not working")
+	}
+
+	err = client.ApiKeyUpdate(out.Key, "crossplane-test0")
+	if err != nil {
+		t.Errorf("api-key update not working")
+	}
+
+	err = client.ApiKeyDelete(out.Key)
+	if err != nil {
+		t.Errorf("api-key delete not working manual OBS: clean up required, please run the following command \"confluent api-key list | grep \"crossplane-test\" | awk '{ print $1 }' | xargs -I {} confluent api-key delete {}\"")
+	}
+
+	_, err = client.GetApiKeyByKey(out.Key)
+	if err != nil {
+		assert.Equal(err.Error(), ErrNotExists, "deleted key should should return not exists")
 	}
 }
-
-// Assert

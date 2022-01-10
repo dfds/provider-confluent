@@ -7,6 +7,7 @@ require (
 	github.com/crossplane/crossplane-tools v0.0.0-20210320162312-1baca298c527
 	github.com/google/uuid v1.3.0
 	github.com/pkg/errors v0.9.1
+	github.com/stretchr/testify v1.7.0
 	go.dfds.cloud v0.1.3
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	k8s.io/apimachinery v0.21.3
