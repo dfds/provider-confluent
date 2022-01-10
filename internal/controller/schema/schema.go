@@ -19,6 +19,7 @@ package schema
 import (
 	"context"
 	"encoding/json"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"reflect"
 	"strings"
 
@@ -156,7 +157,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errNewClient)
 	}
 
-	return &external{service: svc}, nil
+	return &external{service: svc, kube: c.kube}, nil
 }
 
 // An ExternalClient observes, then either creates, updates, or deletes an
@@ -165,6 +166,7 @@ type external struct {
 	// A 'client' used to connect to the external resource API. In practice this
 	// would be something like an AWS SDK client.
 	service interface{}
+	kube    client.Client
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -207,6 +209,11 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
+	cr.Status.SetConditions(xpv1.Available())
+	if err := c.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalObservation{}, err
+	}
+
 	return managed.ExternalObservation{
 		// Return false when the external resource does not exist. This lets
 		// the managed resource reconciler know that it needs to call Create to
@@ -228,6 +235,11 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	cr, ok := mg.(*v1alpha1.Schema)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
+	}
+
+	cr.Status.SetConditions(xpv1.Creating())
+	if err := c.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, err
 	}
 
 	var client = c.service.(schemaregistry.IClient)
@@ -275,6 +287,11 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 	cr, ok := mg.(*v1alpha1.Schema)
 	if !ok {
 		return errors.New(errNotMyType)
+	}
+
+	cr.Status.SetConditions(xpv1.Deleting())
+	if err := c.kube.Status().Update(ctx, cr); err != nil {
+		return err
 	}
 
 	var client = c.service.(schemaregistry.IClient)
