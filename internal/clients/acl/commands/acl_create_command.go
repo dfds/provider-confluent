@@ -15,60 +15,32 @@ const (
 	errResourceTypeInvalid = "resource type must be either TOPIC or CONSUMER_GROUP"
 )
 
-// ACLCreateCommand is a struct for ACL create command
-type ACLCreateCommand exec.Cmd
-
 // NewACLCreateCommand is a factory method for ACL create command
-// func NewACLCreateCommand(action string, clusterScope string, consumerGroup string, operations []string, prefix string, serviceAccount string, topic string, environment string, cluster string) (ACLCreateCommand, error) {
-// 	var command = ACLCreateCommand{
-// 		Path: clients.CliName,
-// 		Args: []string{"kafka", "acl", "create", "--action", action, "--cluster-scope", clusterScope, "--service-account", serviceAccount, "--environment", environment, "--prefix", prefix, "-o", "json"},
-// 	}
-
-// 	for _, v := range operations {
-// 		command.Args = append(command.Args, "--operation", v)
-// 	}
-
-// 	if topic != "" && consumerGroup == "" {
-// 		command.Args = append(command.Args, "--topic", topic)
-// 	} else if topic == "" && consumerGroup != "" {
-// 		command.Args = append(command.Args, "--consumer-group", consumerGroup)
-// 	} else {
-// 		return ACLCreateCommand{}, errors.New(ErrTopicOrConsumerGroupAllowed)
-// 	}
-
-// 	return command, nil
-// }
-
-// NewACLCreateCommand is a factory method for ACL create command
-func NewACLCreateCommand(aclP v1alpha1.ACLParameters) (ACLCreateCommand, error) {
-
-	var command = ACLCreateCommand{
+func NewACLCreateCommand(aclP v1alpha1.ACLParameters) (exec.Cmd, error) {
+	var command = exec.Cmd{
 		Path: clients.CliName,
-		Args: []string{"kafka", "acl", "create", "--cluster-scope", aclP.ClusterScope, "--environment", aclP.Environment, "-o", "json"},
+		Args: []string{"kafka", "acl", "create", "--environment", aclP.Environment, "--cluster", aclP.Cluster, "-o", "json"},
 	}
-	for _, v := range aclP.ACLBlockList {
-		err := parsePatternType(&command, v.PatternType)
-		if err != nil {
-			return command, err
-		}
-
-		err = parsePermission(&command, v.Permission)
-		if err != nil {
-			return command, err
-		}
-
-		err = parseServiceAccount(&command, v.Principal)
-		if err != nil {
-			return command, err
-		}
-
-		err = parseResource(&command, v.ResourceName, v.ResourceType)
-		if err != nil {
-			return command, nil
-		}
-		command.Args = append(command.Args, "--operation", v.Operation)
+	err := parsePatternType(&command, aclP.ACLRule.PatternType)
+	if err != nil {
+		return command, err
 	}
+
+	err = parsePermission(&command, aclP.ACLRule.Permission)
+	if err != nil {
+		return command, err
+	}
+
+	err = parseServiceAccount(&command, aclP.ACLRule.Principal)
+	if err != nil {
+		return command, err
+	}
+
+	err = parseResource(&command, aclP.ACLRule.ResourceName, aclP.ACLRule.ResourceType)
+	if err != nil {
+		return command, nil
+	}
+	command.Args = append(command.Args, "--operation", aclP.ACLRule.Operation)
 
 	return command, nil
 }

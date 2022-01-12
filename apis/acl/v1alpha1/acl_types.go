@@ -9,8 +9,8 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// ACLBlock
-// type ACLBlock struct {
+// ACLRule
+// type ACLRule struct {
 // 	Action         string   `json:"action"`
 // 	ClusterScope   string   `json:"clusterScope"`
 // 	ConsumerGroup  string   `json:"consumerGroup"`
@@ -22,27 +22,26 @@ import (
 // 	Cluster        string   `json:"cluster"`
 // }
 
-// ACLBlock
-type ACLBlock struct {
+// ACLRule
+type ACLRule struct {
 	Operation    string `json:"operation"`
-	PatternType  string `json:"pattern_type"`
-	Permission   string `json:"permission"`
+	PatternType  string `json:"pattern_type"` // LITERAL, PREFIXED
+	Permission   string `json:"permission"`   // ALLOW, DENY
 	Principal    string `json:"principal"`
-	ResourceName string `json:"resource_name"`
-	ResourceType string `json:"resource_type"`
+	ResourceName string `json:"resource_name"` // sa-00000
+	ResourceType string `json:"resource_type"` // TOPIC, CONSUMER_GROUP, CLUSTER
 }
 
 // ACLParameters are the configurable fields of a ACL.
 type ACLParameters struct {
-	ACLBlockList []ACLBlock `json:"aclBlockList"`
-	ClusterScope string     `json:"clusterScope"`
-	Environment  string     `json:"environment"`
-	Cluster      string     `json:"cluster"`
+	ACLRule     ACLRule `json:"aclRule"`
+	Environment string  `json:"environment"`
+	Cluster     string  `json:"cluster"`
 }
 
 // ACLObservation are the observable fields of a ACL.
 type ACLObservation struct {
-	ACLBlockObservationList []ACLBlock `json:"aclBlockObservationList"`
+	ACLP ACLParameters `json:"aclParameters"`
 }
 
 // ACL Spec defines the desired state of a ACL.

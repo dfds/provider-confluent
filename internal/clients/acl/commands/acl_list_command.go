@@ -6,14 +6,11 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients"
 )
 
-// ApiKeyListCommand is a struct for ApiKey list command
-type ApiKeyListCommand exec.Cmd
-
-// NewApiKeyListCommand is a factory method for ApiKey list command
-func NewApiKeyListCommand() ApiKeyListCommand {
-	var command = ApiKeyListCommand{
+// NewACLListCommand is a factory method for ACL list command
+func NewACLListCommand(environment string, cluster string, serviceAccount string) exec.Cmd {
+	var command = exec.Cmd{
 		Path: clients.CliName,
-		Args: []string{"api-key", "list", "-o", "json"},
+		Args: []string{"kafka", "acl", "list", "--environment", environment, "--cluster", cluster, "--service-account", serviceAccount, "-o", "json"},
 	}
 
 	return command

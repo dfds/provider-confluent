@@ -2,10 +2,11 @@ package commands
 
 import (
 	"errors"
+	"os/exec"
 	"strings"
 )
 
-func parsePatternType(cmd *ACLCreateCommand, patternType string) error {
+func parsePatternType(cmd *exec.Cmd, patternType string) error {
 	switch patternType {
 	case "PREFIXED":
 		cmd.Args = append(cmd.Args, "--prefix")
@@ -17,7 +18,7 @@ func parsePatternType(cmd *ACLCreateCommand, patternType string) error {
 	}
 }
 
-func parsePermission(cmd *ACLCreateCommand, permission string) error {
+func parsePermission(cmd *exec.Cmd, permission string) error {
 	switch permission {
 	case "ALLOW":
 		cmd.Args = append(cmd.Args, "--allow")
@@ -30,7 +31,7 @@ func parsePermission(cmd *ACLCreateCommand, permission string) error {
 	}
 }
 
-func parseServiceAccount(cmd *ACLCreateCommand, principal string) error {
+func parseServiceAccount(cmd *exec.Cmd, principal string) error {
 	split := strings.Split(principal, ":")
 	if len(split) != 2 {
 		errors.New(errPrincipalInvalid)
@@ -49,13 +50,16 @@ func parseServiceAccount(cmd *ACLCreateCommand, principal string) error {
 	return nil
 }
 
-func parseResource(cmd *ACLCreateCommand, rName string, rType string) error {
+func parseResource(cmd *exec.Cmd, rName string, rType string) error {
 	switch rType {
 	case "TOPIC":
 		cmd.Args = append(cmd.Args, "--topic", rName)
 		return nil
 	case "CONSUMER_GROUP":
 		cmd.Args = append(cmd.Args, "--consumer-group", rName)
+		return nil
+	case "CLUSTER":
+		cmd.Args = append(cmd.Args, "--cluster-scope")
 		return nil
 	default:
 		return errors.New(errResourceTypeInvalid)

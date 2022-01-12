@@ -1,33 +1,38 @@
 package commands
 
 import (
-	"errors"
+	"github.com/dfds/provider-confluent/apis/acl/v1alpha1"
 	"os/exec"
 
 	"github.com/dfds/provider-confluent/internal/clients"
 )
 
-// ACLDeleteCommand is a struct for ACL delete command
-type ACLDeleteCommand exec.Cmd
-
 // NewACLDeleteCommand is a factory method for ACL delete command
-func NewACLDeleteCommand(action string, clusterScope string, consumerGroup string, operations []string, prefix string, serviceAccount string, topic string, environment string, cluster string) (ACLDeleteCommand, error) {
-	var command = ACLDeleteCommand{
+func NewACLDeleteCommand(aclP v1alpha1.ACLParameters) (exec.Cmd, error) {
+	var command = exec.Cmd{
 		Path: clients.CliName,
-		Args: []string{"kafka", "acl", "create", "--action", action, "--cluster-scope", clusterScope, "--service-account", serviceAccount, "--environment", environment, "--prefix", prefix, "-o", "json"},
+		Args: []string{"kafka", "acl", "delete", "--environment", aclP.Environment, "--cluster", aclP.Cluster},
+	}
+	err := parsePatternType(&command, aclP.ACLRule.PatternType)
+	if err != nil {
+		return command, err
 	}
 
-	for _, v := range operations {
-		command.Args = append(command.Args, "--operation", v)
+	err = parsePermission(&command, aclP.ACLRule.Permission)
+	if err != nil {
+		return command, err
 	}
 
-	if topic != "" && consumerGroup == "" {
-		command.Args = append(command.Args, "--topic", topic)
-	} else if topic == "" && consumerGroup != "" {
-		command.Args = append(command.Args, "--consumer-group", consumerGroup)
-	} else {
-		return ACLDeleteCommand{}, errors.New(ErrTopicOrConsumerGroupAllowed)
+	err = parseServiceAccount(&command, aclP.ACLRule.Principal)
+	if err != nil {
+		return command, err
 	}
+
+	err = parseResource(&command, aclP.ACLRule.ResourceName, aclP.ACLRule.ResourceType)
+	if err != nil {
+		return command, nil
+	}
+	command.Args = append(command.Args, "--operation", aclP.ACLRule.Operation)
 
 	return command, nil
 }

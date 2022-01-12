@@ -1,13 +1,15 @@
 package acl
 
-import "github.com/dfds/provider-confluent/internal/clients"
+import (
+	"github.com/dfds/provider-confluent/apis/acl/v1alpha1"
+	"github.com/dfds/provider-confluent/internal/clients"
+)
 
 // IClient interface for service account client
 type IClient interface {
-	ACLCreate() ACLBlockList
-	ACLDelete() error
-	ACLList() (ACLBlockList, error)
-	ACLUpdate() error
+	ACLCreate(aclP v1alpha1.ACLParameters) ([]v1alpha1.ACLRule, error)
+	ACLDelete(aclP v1alpha1.ACLParameters) error
+	ACLList(serviceAccount string, environment string, cluster string) ([]v1alpha1.ACLRule, error)
 }
 
 // Config is a configuration element for the service account client
