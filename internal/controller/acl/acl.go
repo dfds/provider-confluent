@@ -18,6 +18,7 @@ package acl
 
 import (
 	"context"
+	"github.com/dfds/provider-confluent/internal/clients/acl/commands"
 	"reflect"
 	"strings"
 
@@ -165,9 +166,23 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
 	}
 
+	if cr.Status.AtProvider.ACLP.ACLRule.Principal == "" {
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, nil
+	}
+
 	// Confluent
 	var client = c.service.(acl.IClient)
-	aclResp, err := client.ACLList(cr.Status.AtProvider.ACLP.ACLRule.Principal, cr.Status.AtProvider.ACLP.Environment, cr.Status.AtProvider.ACLP.Cluster)
+	serviceAccount, err := commands.ParsePrincipal(cr.Status.AtProvider.ACLP.ACLRule.Principal)
+	if err != nil {
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, err
+	}
+	aclResp, err := client.ACLList(serviceAccount, cr.Status.AtProvider.ACLP.Environment, cr.Status.AtProvider.ACLP.Cluster)
 
 	if err != nil {
 		if err.Error() == acl.ErrACLNotExistsOrInvalidServiceAccount {

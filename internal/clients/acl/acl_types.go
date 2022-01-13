@@ -31,4 +31,24 @@ type ACLBlock struct {
 	ResourceType string `json:"resource_type"`
 }
 
-type ACLBlockList []ACLBlock
+func FromACLBlockToACLRule(input ACLBlock) v1alpha1.ACLRule {
+	return v1alpha1.ACLRule{
+		Operation:    input.Operation,
+		PatternType:  input.PatternType,
+		Permission:   input.Permission,
+		Principal:    input.Principal,
+		ResourceName: input.ResourceName,
+		ResourceType: input.ResourceType,
+	}
+}
+
+func FromACLRuleToACLBlock(input v1alpha1.ACLRule) ACLBlock {
+	return ACLBlock{
+		Operation:    input.Operation,
+		PatternType:  input.PatternType,
+		Permission:   input.Permission,
+		Principal:    input.Principal,
+		ResourceName: input.ResourceName,
+		ResourceType: input.ResourceType,
+	}
+}

@@ -25,11 +25,11 @@ import (
 // ACLRule
 type ACLRule struct {
 	Operation    string `json:"operation"`
-	PatternType  string `json:"pattern_type"` // LITERAL, PREFIXED
-	Permission   string `json:"permission"`   // ALLOW, DENY
-	Principal    string `json:"principal"`    // sa-00000
-	ResourceName string `json:"resource_name"`
-	ResourceType string `json:"resource_type"` // TOPIC, CONSUMER_GROUP, CLUSTER
+	PatternType  string `json:"patternType"` // LITERAL, PREFIXED
+	Permission   string `json:"permission"`  // ALLOW, DENY
+	Principal    string `json:"principal"`   // sa-00000
+	ResourceName string `json:"resourceName"`
+	ResourceType string `json:"resourceType"` // TOPIC, CONSUMER_GROUP, CLUSTER
 }
 
 // ACLParameters are the configurable fields of a ACL.

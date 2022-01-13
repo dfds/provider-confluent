@@ -41,9 +41,14 @@ func (c *Client) ACLCreate(aclP v1alpha1.ACLParameters) ([]v1alpha1.ACLRule, err
 		return resp, errorParser(out)
 	}
 
-	err = json.Unmarshal(out, &resp)
+	var aclBlocks []ACLBlock
+	err = json.Unmarshal(out, &aclBlocks)
 	if err != nil {
 		return resp, err
+	}
+
+	for _, block := range aclBlocks {
+		resp = append(resp, FromACLBlockToACLRule(block))
 	}
 
 	return resp, nil
@@ -74,9 +79,14 @@ func (c *Client) ACLList(serviceAccount string, environment string, cluster stri
 		return resp, errorParser(out)
 	}
 
-	err = json.Unmarshal(out, &resp)
+	var aclBlocks []ACLBlock
+	err = json.Unmarshal(out, &aclBlocks)
 	if err != nil {
 		return resp, err
+	}
+
+	for _, block := range aclBlocks {
+		resp = append(resp, FromACLBlockToACLRule(block))
 	}
 
 	if len(resp) == 0 {

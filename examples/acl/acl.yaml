@@ -1,0 +1,18 @@
+---
+apiVersion: kafka.confluent.crossplane.io/v1alpha1
+kind: ACL
+metadata:
+  name: sa-0000
+spec:
+  forProvider:
+    environment: env-0000
+    cluster: lkc-0000
+    aclRule:
+      operation: READ
+      patternType: LITERAL
+      permission: ALLOW
+      principal: "User:sa-0000"
+      resourceName: "weeee"
+      resourceType: "TOPIC"
+  providerConfigRef:
+    name: confluent-provider

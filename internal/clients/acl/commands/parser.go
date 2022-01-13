@@ -2,6 +2,7 @@ package commands
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -32,22 +33,32 @@ func parsePermission(cmd *exec.Cmd, permission string) error {
 }
 
 func parseServiceAccount(cmd *exec.Cmd, principal string) error {
+	serviceAccount, err := ParsePrincipal(principal)
+	if err != nil {
+		return err
+	}
+	cmd.Args = append(cmd.Args, "--service-account", serviceAccount)
+	return nil
+}
+
+func ParsePrincipal(principal string) (string, error) {
+	fmt.Println("Principal: ", principal)
 	split := strings.Split(principal, ":")
 	if len(split) != 2 {
-		errors.New(errPrincipalInvalid)
+		return "", errors.New(errPrincipalInvalid)
 	}
 	user := split[0]
 	if user != "User" {
-		errors.New(errPrincipalInvalid)
+		return "", errors.New(errPrincipalInvalid)
 	}
 
-	serviceaccount := split[1]
-	if strings.Contains(serviceaccount, "sa-") {
-		errors.New(errPrincipalInvalid)
+	serviceAccount := split[1]
+	if !strings.Contains(serviceAccount, "sa-") {
+		fmt.Println("ServiceAccount: ", serviceAccount)
+		return "", errors.New(errPrincipalInvalid)
 	}
 
-	cmd.Args = append(cmd.Args, "--service-account", serviceaccount)
-	return nil
+	return serviceAccount, nil
 }
 
 func parseResource(cmd *exec.Cmd, rName string, rType string) error {

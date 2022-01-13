@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"github.com/dfds/provider-confluent/internal/controller/acl"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -36,6 +37,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 		schema.Setup,
 		serviceaccount.Setup,
 		apikey.Setup,
+		acl.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

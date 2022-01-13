@@ -70,23 +70,23 @@ spec:
                     properties:
                       operation:
                         type: string
-                      pattern_type:
+                      patternType:
                         type: string
                       permission:
                         type: string
                       principal:
                         type: string
-                      resource_name:
+                      resourceName:
                         type: string
-                      resource_type:
+                      resourceType:
                         type: string
                     required:
                     - operation
-                    - pattern_type
+                    - patternType
                     - permission
                     - principal
-                    - resource_name
-                    - resource_type
+                    - resourceName
+                    - resourceType
                     type: object
                   cluster:
                     type: string
@@ -147,37 +147,43 @@ spec:
               atProvider:
                 description: ACLObservation are the observable fields of a ACL.
                 properties:
-                  aclRuleObservation:
-                    description: ACLRule
+                  aclParameters:
+                    description: ACLParameters are the configurable fields of a ACL.
                     properties:
-                      operation:
+                      aclRule:
+                        description: ACLRule
+                        properties:
+                          operation:
+                            type: string
+                          patternType:
+                            type: string
+                          permission:
+                            type: string
+                          principal:
+                            type: string
+                          resourceName:
+                            type: string
+                          resourceType:
+                            type: string
+                        required:
+                        - operation
+                        - patternType
+                        - permission
+                        - principal
+                        - resourceName
+                        - resourceType
+                        type: object
+                      cluster:
                         type: string
-                      pattern_type:
-                        type: string
-                      permission:
-                        type: string
-                      principal:
-                        type: string
-                      resource_name:
-                        type: string
-                      resource_type:
+                      environment:
                         type: string
                     required:
-                    - operation
-                    - pattern_type
-                    - permission
-                    - principal
-                    - resource_name
-                    - resource_type
+                    - aclRule
+                    - cluster
+                    - environment
                     type: object
-                  cluster:
-                    type: string
-                  environment:
-                    type: string
                 required:
-                - aclRuleObservation
-                - cluster
-                - environment
+                - aclParameters
                 type: object
               conditions:
                 description: Conditions of the resource.
