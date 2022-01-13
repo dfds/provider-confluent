@@ -18,7 +18,7 @@ package acl
 
 import (
 	"context"
-	"github.com/dfds/provider-confluent/internal/clients/apikey"
+	"reflect"
 	"strings"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -167,10 +167,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	// Confluent
 	var client = c.service.(acl.IClient)
-	ccsa, err := client.ACLList(cr.Status.AtProvider.Key)
+	aclResp, err := client.ACLList(cr.Status.AtProvider.ACLP.ACLRule.Principal, cr.Status.AtProvider.ACLP.Environment, cr.Status.AtProvider.ACLP.Cluster)
 
 	if err != nil {
-		if err.Error() == apikey.ErrNotExists {
+		if err.Error() == acl.ErrACLNotExistsOrInvalidServiceAccount {
 			return managed.ExternalObservation{
 				ResourceExists:    false,
 				ConnectionDetails: managed.ConnectionDetails{},
@@ -184,9 +184,35 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	// Diff
-	if cr.Spec.ForProvider.Description != ccsa.Description {
+	ruleStatusMatched := false
+	ruleSpecMatched := false
+	for _, rule := range aclResp {
+		if ruleStatusMatched && ruleSpecMatched {
+			break
+		}
+
+		if reflect.DeepEqual(rule, cr.Status.AtProvider.ACLP.ACLRule) {
+			ruleStatusMatched = true
+		}
+
+		if reflect.DeepEqual(rule, cr.Spec.ForProvider.ACLRule) {
+			ruleSpecMatched = true
+		}
+	}
+
+	// Rule stored in Status matched, but rule that currently exists in Spec doesn't. Delete rule specified in Status & create a new rule based from Spec. Update Status with rule from Spec.
+	if ruleStatusMatched && !ruleSpecMatched {
 		return managed.ExternalObservation{
 			ResourceExists:    true,
+			ResourceUpToDate:  false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, nil
+	}
+
+	// Rule stored in Status & Spec not matched. Create rule from Spec, update Status with rule from Spec.
+	if !ruleStatusMatched && !ruleSpecMatched {
+		return managed.ExternalObservation{
+			ResourceExists:    false,
 			ResourceUpToDate:  false,
 			ConnectionDetails: managed.ConnectionDetails{},
 		}, nil
