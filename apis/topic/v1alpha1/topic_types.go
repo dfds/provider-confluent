@@ -9,26 +9,30 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
+// TopicConfig
+type Config struct {
+	Retention int64 `json:"retention"`
+}
+
 // TopicRule
-type TopicRule struct {
-	Operation    string `json:"operation"`
-	PatternType  string `json:"patternType"` // LITERAL, PREFIXED
-	Permission   string `json:"permission"`  // ALLOW, DENY
-	Principal    string `json:"principal"`   // sa-00000
-	ResourceName string `json:"resourceName"`
-	ResourceType string `json:"resourceType"` // TOPIC, CONSUMER_GROUP, CLUSTER
+type TopicConfig struct {
+	Name       string `json:"name"`
+	Partitions int    `json:"partitions"`
+	Config     Config `json:"config"`
 }
 
 // TopicParameters are the configurable fields of a Topic.
 type TopicParameters struct {
-	TopicRule   TopicRule `json:"TopicRule"`
-	Environment string    `json:"environment"`
-	Cluster     string    `json:"cluster"`
+	Topic       TopicConfig `json:"Topic"`
+	Environment string      `json:"environment"`
+	Cluster     string      `json:"cluster"`
 }
 
 // TopicObservation are the observable fields of a Topic.
 type TopicObservation struct {
-	TopicP TopicParameters `json:"TopicParameters"`
+	Environment string `json:"environment"`
+	Cluster     string `json:"cluster"`
+	Name        string `json:"name"`
 }
 
 // Topic Spec defines the desired state of a Topic.
