@@ -9,7 +9,7 @@ import (
 type IClient interface {
 	TopicCreate(tp v1alpha1.TopicParameters) (interface{}, error)
 	TopicDelete(tp v1alpha1.TopicParameters) error
-	TopicDescribe(name string, cluster string, environment string) (interface{}, error)
+	TopicDescribe(to v1alpha1.TopicObservation) (interface{}, error)
 	TopicUpdate(tp v1alpha1.TopicParameters) error
 }
 
