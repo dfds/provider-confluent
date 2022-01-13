@@ -43,7 +43,7 @@ import (
 )
 
 const (
-	errNotMyType                      = "managed resource is not a ApiKey custom resource"
+	errNotMyType                      = "managed resource is not an ACL custom resource"
 	errTrackPCUsage                   = "cannot track ProviderConfig usage"
 	errGetPC                          = "cannot get ProviderConfig"
 	errGetCreds                       = "cannot get credentials"
@@ -200,7 +200,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}
 	}
 
-	// Rule stored in Status matched, but rule that currently exists in Spec doesn't. Delete rule specified in Status & create a new rule based from Spec. Update Status with rule from Spec.
+	// Rule stored in Status matched, but rule in Spec doesn't. Delete rule specified in Status & create a new rule based from Spec. Update Status with rule from Spec.
 	if ruleStatusMatched && !ruleSpecMatched {
 		return managed.ExternalObservation{
 			ResourceExists:    true,
@@ -209,7 +209,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, nil
 	}
 
-	// Rule stored in Status & Spec not matched. Create rule from Spec, update Status with rule from Spec.
+	// Rule stored in Status & Spec didn't match. Create rule from Spec, update Status with rule from Spec.
 	if !ruleStatusMatched && !ruleSpecMatched {
 		return managed.ExternalObservation{
 			ResourceExists:    false,
