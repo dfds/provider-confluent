@@ -163,6 +163,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
 	}
+	fmt.Println("OBSERVE")
 
 	if cr.Status.AtProvider.Name == "" {
 		return managed.ExternalObservation{
@@ -223,6 +224,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
 	}
+	fmt.Println("CREATE")
 
 	cr.Status.SetConditions(xpv1.Creating())
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
@@ -257,6 +259,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotMyType)
 	}
+	fmt.Println("UPDATE")
 
 	var client = c.service.(topic.IClient)
 
@@ -272,9 +275,9 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	// Destructive
-	fmt.Println("Before destructive:", requireUpdate.IsDestructive())
+	fmt.Println("UPDATE DESCTRUCTIVE:", requireUpdate.IsDestructive())
 	if requireUpdate.IsDestructive() {
-		err := client.TopicDelete(v1alpha1.TopicParameters{Cluster: cr.Status.AtProvider.Cluster, Environment: cr.Status.AtProvider.Cluster, Topic: v1alpha1.TopicConfig{Name: cr.Status.AtProvider.Name}})
+		err := client.TopicDelete(v1alpha1.TopicParameters{Cluster: cr.Status.AtProvider.Cluster, Environment: cr.Status.AtProvider.Environment, Topic: v1alpha1.TopicConfig{Name: cr.Status.AtProvider.Name}})
 
 		if err != nil {
 			return managed.ExternalUpdate{}, err
@@ -284,7 +287,14 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		if err != nil {
 			return managed.ExternalUpdate{}, err
 		}
+		cr.Status.AtProvider.Name = cr.Spec.ForProvider.Topic.Name
+		cr.Status.AtProvider.Cluster = cr.Spec.ForProvider.Cluster
+		cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
+		if err := c.kube.Status().Update(ctx, cr); err != nil {
+			return managed.ExternalUpdate{}, err
+		}
 	} else {
+		fmt.Println("UPDATE IN-PLACE:", cr.Spec.ForProvider, "with:", observed)
 		err := client.TopicUpdate(cr.Spec.ForProvider)
 		if err != nil {
 			return managed.ExternalUpdate{}, err
@@ -303,6 +313,7 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 	if !ok {
 		return errors.New(errNotMyType)
 	}
+	fmt.Println("DELETE")
 
 	cr.Status.SetConditions(xpv1.Deleting())
 	if err := c.kube.Status().Update(ctx, cr); err != nil {

@@ -11,6 +11,7 @@ spec:
       name: confluent-test0
       partitions: 2
       config:
-        retention: 604800000
+        # retention: 604800000
+        retention: 259200000
   providerConfigRef:
     name: confluent-provider

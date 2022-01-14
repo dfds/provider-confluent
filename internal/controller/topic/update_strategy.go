@@ -36,15 +36,11 @@ func updateStrategy(tp v1alpha1.TopicParameters, td topic.TopicDescribeResponse,
 		compare.ConfigMatch = true
 	}
 
-	fmt.Println("Observed:", td.Config.NumPartitions)
-	fmt.Println("Spec:", tp.Topic.Partitions)
 	numPartitions, err := strconv.Atoi(td.Config.NumPartitions)
 	if err != nil {
 		return compare, err
 	}
-	fmt.Println("Converted observed:", numPartitions)
 
-	fmt.Println("ARE WE FUCKEDDDDDD:", tp.Topic.Partitions == numPartitions)
 	if tp.Topic.Partitions == numPartitions {
 		compare.PartitionsMatch = true
 
@@ -55,13 +51,28 @@ func updateStrategy(tp v1alpha1.TopicParameters, td topic.TopicDescribeResponse,
 		compare.PartitionsMatch = false
 	}
 
+	fmt.Println("UPDATE_STRATEGY:", compare)
+
 	return compare, nil
 }
 
 func (tc *TopicCompare) IsDestructive() bool {
-	fmt.Println("WWHHHATTTT IS GOING ON:", tc)
-	if !(tc.ClusterMatch || tc.EnvironmentMatch || tc.TopicNamesMatch || tc.PartitionsMatch) {
-		return true
+	isDestructive := false
+	if !tc.ClusterMatch {
+		isDestructive = true
 	}
-	return true
+
+	if !tc.EnvironmentMatch {
+		isDestructive = true
+	}
+
+	if !tc.TopicNamesMatch {
+		isDestructive = true
+	}
+
+	if !tc.PartitionsMatch {
+		isDestructive = true
+	}
+
+	return isDestructive
 }
