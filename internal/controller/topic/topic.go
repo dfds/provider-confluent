@@ -18,6 +18,7 @@ package topic
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -163,6 +164,13 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
 	}
 
+	if cr.Status.AtProvider.Name == "" {
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, nil // returning nil because we want create on not found
+	}
+
 	// Confluent
 	var client = c.service.(topic.IClient)
 	ccsa, err := client.TopicDescribe(cr.Status.AtProvider)
@@ -190,7 +198,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, err
 	}
 
-	if requireUpdate.ClusterMatch || requireUpdate.ConfigMatch || requireUpdate.EnvironmentMatch || requireUpdate.PartitionsMatch || requireUpdate.TopicNamesMatch {
+	if !requireUpdate.ClusterMatch || !requireUpdate.ConfigMatch || !requireUpdate.EnvironmentMatch || !requireUpdate.PartitionsMatch || !requireUpdate.TopicNamesMatch {
 		return managed.ExternalObservation{
 			ResourceExists:    true,
 			ResourceUpToDate:  false,
@@ -264,7 +272,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	// Destructive
-
+	fmt.Println("Before destructive:", requireUpdate.IsDestructive())
 	if requireUpdate.IsDestructive() {
 		err := client.TopicDelete(v1alpha1.TopicParameters{Cluster: cr.Status.AtProvider.Cluster, Environment: cr.Status.AtProvider.Cluster, Topic: v1alpha1.TopicConfig{Name: cr.Status.AtProvider.Name}})
 

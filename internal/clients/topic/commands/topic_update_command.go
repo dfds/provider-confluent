@@ -12,8 +12,7 @@ import (
 func NewTopicUpdateCommand(tp v1alpha1.TopicParameters) exec.Cmd {
 	var command = exec.Cmd{
 		Path: clients.CliName,
-		Args: []string{"kafka", "topic", "update", tp.Topic.Name, "--cluster", tp.Cluster, "--environment", tp.Environment, "--partitions", fmt.Sprintf("%d", tp.Topic.Partitions), "--config", fmt.Sprintf("'retention.ms=%d'", tp.Topic.Config.Retention)},
+		Args: []string{"kafka", "topic", "update", tp.Topic.Name, "--cluster", tp.Cluster, "--environment", tp.Environment, "--config", fmt.Sprintf("retention.ms=%d", tp.Topic.Config.Retention)},
 	}
-
 	return command
 }

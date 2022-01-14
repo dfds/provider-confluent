@@ -18,6 +18,7 @@ package controller
 
 import (
 	"github.com/dfds/provider-confluent/internal/controller/acl"
+	"github.com/dfds/provider-confluent/internal/controller/topic"
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 
@@ -38,6 +39,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 		serviceaccount.Setup,
 		apikey.Setup,
 		acl.Setup,
+		topic.Setup,
 	} {
 		if err := setup(mgr, l, wl); err != nil {
 			return err

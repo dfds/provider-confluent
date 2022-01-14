@@ -1,0 +1,16 @@
+---
+apiVersion: kafka.confluent.crossplane.io/v1alpha1
+kind: Topic
+metadata:
+  name: confluent-test0
+spec:
+  forProvider:
+    cluster: ${CONFLUENT_CLUSTER_ID}
+    environment: ${CONFLUENT_ENVIRONMENT}
+    topic:
+      name: confluent-test0
+      partitions: 2
+      config:
+        retention: 604800000
+  providerConfigRef:
+    name: confluent-provider

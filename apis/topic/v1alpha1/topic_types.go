@@ -23,7 +23,7 @@ type TopicConfig struct {
 
 // TopicParameters are the configurable fields of a Topic.
 type TopicParameters struct {
-	Topic       TopicConfig `json:"Topic"`
+	Topic       TopicConfig `json:"topic"`
 	Environment string      `json:"environment"`
 	Cluster     string      `json:"cluster"`
 }
