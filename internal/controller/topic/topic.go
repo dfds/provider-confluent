@@ -38,7 +38,6 @@ import (
 
 	"github.com/dfds/provider-confluent/internal/clients"
 	confluentClient "github.com/dfds/provider-confluent/internal/clients"
-	"github.com/dfds/provider-confluent/internal/clients/apikey"
 	"github.com/dfds/provider-confluent/internal/clients/topic"
 )
 
@@ -169,7 +168,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	ccsa, err := client.TopicDescribe(cr.Status.AtProvider)
 
 	if err != nil {
-		if err.Error() == topic.ErrNotExists {
+		if err.Error() == topic.ErrUnknownTopic {
 			return managed.ExternalObservation{
 				ResourceExists:    false,
 				ConnectionDetails: managed.ConnectionDetails{},
@@ -183,20 +182,21 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	// Diff
-	if cr.Spec.ForProvider.Topic.Name != ccsa.Name || cr.Spec.ForProvider.Cluster != cssa. {
+	requireUpdate, err := updateStrategy(cr.Spec.ForProvider, ccsa, cr.Status.AtProvider)
+	if err != nil {
+		return managed.ExternalObservation{
+			ResourceExists:    true,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, err
+	}
+
+	if requireUpdate.ClusterMatch || requireUpdate.ConfigMatch || requireUpdate.EnvironmentMatch || requireUpdate.PartitionsMatch || requireUpdate.TopicNamesMatch {
 		return managed.ExternalObservation{
 			ResourceExists:    true,
 			ResourceUpToDate:  false,
 			ConnectionDetails: managed.ConnectionDetails{},
 		}, nil
 	}
-	// if cr.Spec.ForProvider.Description != ccsa.Description {
-	// 	return managed.ExternalObservation{
-	// 		ResourceExists:    true,
-	// 		ResourceUpToDate:  false,
-	// 		ConnectionDetails: managed.ConnectionDetails{},
-	// 	}, nil
-	// }
 
 	cr.Status.SetConditions(xpv1.Available())
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
@@ -211,7 +211,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.ApiKey)
+	cr, ok := mg.(*v1alpha1.Topic)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
 	}
@@ -221,22 +221,21 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, err
 	}
 
-	var client = c.service.(apikey.IClient)
-	out, err := client.ApiKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
+	var client = c.service.(topic.IClient)
+	err := client.TopicCreate(cr.Spec.ForProvider)
 
 	if err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
-	cr.Status.AtProvider.Key = out.Key
+	cr.Status.AtProvider.Name = cr.Spec.ForProvider.Topic.Name
+	cr.Status.AtProvider.Cluster = cr.Spec.ForProvider.Cluster
+	cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
-	conn := managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretUserKey:     []byte(out.Key),
-		xpv1.ResourceCredentialsSecretPasswordKey: []byte(out.Secret),
-	}
+	conn := managed.ConnectionDetails{}
 
 	return managed.ExternalCreation{
 		// Optionally return any details that may be required to connect to the
@@ -246,17 +245,42 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.ApiKey)
+	cr, ok := mg.(*v1alpha1.Topic)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotMyType)
 	}
 
-	var client = c.service.(apikey.IClient)
+	var client = c.service.(topic.IClient)
 
 	// Update description
-	err := client.ApiKeyUpdate(cr.Status.AtProvider.Key, cr.Spec.ForProvider.Description)
+	observed, err := client.TopicDescribe(cr.Status.AtProvider)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
+	}
+
+	requireUpdate, err := updateStrategy(cr.Spec.ForProvider, observed, cr.Status.AtProvider)
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
+
+	// Destructive
+
+	if requireUpdate.IsDestructive() {
+		err := client.TopicDelete(v1alpha1.TopicParameters{Cluster: cr.Status.AtProvider.Cluster, Environment: cr.Status.AtProvider.Cluster, Topic: v1alpha1.TopicConfig{Name: cr.Status.AtProvider.Name}})
+
+		if err != nil {
+			return managed.ExternalUpdate{}, err
+		}
+
+		err = client.TopicCreate(cr.Spec.ForProvider)
+		if err != nil {
+			return managed.ExternalUpdate{}, err
+		}
+	} else {
+		err := client.TopicUpdate(cr.Spec.ForProvider)
+		if err != nil {
+			return managed.ExternalUpdate{}, err
+		}
 	}
 
 	return managed.ExternalUpdate{
@@ -267,7 +291,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.ApiKey)
+	cr, ok := mg.(*v1alpha1.Topic)
 	if !ok {
 		return errors.New(errNotMyType)
 	}
@@ -277,9 +301,9 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 		return err
 	}
 
-	var client = c.service.(apikey.IClient)
+	var client = c.service.(topic.IClient)
 
-	err := client.ApiKeyDelete(cr.Status.AtProvider.Key)
+	err := client.TopicDelete(cr.Spec.ForProvider)
 	if err != nil {
 		return err
 	}
