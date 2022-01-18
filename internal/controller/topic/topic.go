@@ -23,6 +23,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -163,7 +164,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
 	}
-	fmt.Println("OBSERVE")
+
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{}, nil
+	}
 
 	if cr.Status.AtProvider.Name == "" {
 		return managed.ExternalObservation{
@@ -235,6 +239,11 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	err := client.TopicCreate(cr.Spec.ForProvider)
 
 	if err != nil {
+		return managed.ExternalCreation{}, err
+	}
+
+	meta.SetExternalName(cr, cr.Spec.ForProvider.Topic.Name)
+	if err := c.kube.Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
