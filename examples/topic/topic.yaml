@@ -4,13 +4,13 @@ kind: Topic
 metadata:
   name: confluent-test1
   annotations:
-    crossplane.io/external-name: confluent-test0
+    crossplane.io/external-name: confluent-test1
 spec:
   forProvider:
     cluster: ${CONFLUENT_CLUSTER_ID}
     environment: ${CONFLUENT_ENVIRONMENT}
     topic:
-      name: confluent-test0
+      name: confluent-test1
       partitions: 3
       config:
         # retention: 604800000

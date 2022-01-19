@@ -250,15 +250,16 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		if extName != cr.Spec.ForProvider.Topic.Name {
 			return managed.ExternalCreation{}, errors.New(errExternalNameAndForProviderTopicNameDoNotMatch)
 		}
+		createObj.Topic.Name = extName
+		resourceNew = false
 		_, err := client.TopicDescribe(v1alpha1.TopicObservation{Cluster: cr.Spec.ForProvider.Cluster, Environment: cr.Spec.ForProvider.Environment, Name: meta.GetExternalName(cr)})
 		if err != nil {
-			if err.Error() != topic.ErrUnknownTopic {
+			if err.Error() == topic.ErrUnknownTopic {
+				resourceNew = true
+			} else {
 				return managed.ExternalCreation{}, err
 			}
 		}
-		createObj.Topic.Name = extName
-		resourceNew = false
-
 	}
 
 	fmt.Println("CREATE is resource new:", resourceNew)
