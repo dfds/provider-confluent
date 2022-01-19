@@ -18,10 +18,12 @@ package serviceaccount
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -164,9 +166,14 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
 	}
 
+	crCopy := cr.DeepCopy()
+	if meta.GetExternalName(cr) != "" { // external name exists
+		crCopy.Name = meta.GetExternalName(cr) // use it
+	}
+
 	// Confluent
 	var client = c.service.(serviceaccount.IClient)
-	ccsa, err := client.ServiceAccountByName(cr.Name)
+	ccsa, err := client.ServiceAccountByName(crCopy.Name)
 
 	if err != nil {
 		if err.Error() == serviceaccount.ErrNotExists {
@@ -180,6 +187,14 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 				ConnectionDetails: managed.ConnectionDetails{},
 			}, err
 		}
+	}
+
+	if cr.Status.AtProvider.Id == "" {
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ResourceUpToDate:  false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, nil
 	}
 
 	// Diff
@@ -213,15 +228,43 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
-
 	var client = c.service.(serviceaccount.IClient)
-	out, err := client.ServiceAccountCreate(cr.Name, cr.Spec.ForProvider.Description) // takes time
+	crCopy := cr.DeepCopy()
+	resourceNew := true
 
-	if err != nil {
+	if meta.GetExternalName(cr) != "" {
+		crCopy.Name = meta.GetExternalName(cr)
+
+		resp, err := client.ServiceAccountByName(crCopy.Name)
+		if err != nil {
+			if err.Error() == serviceaccount.ErrNotExists {
+				// returning nil because we want create on not found
+
+			} else {
+				return managed.ExternalCreation{}, err
+			}
+		} else {
+			resourceNew = false
+			crCopy.Status.AtProvider.Id = resp.Id
+
+		}
+	}
+
+	fmt.Println("CREATE is resource new:", resourceNew)
+	if resourceNew {
+		out, err := client.ServiceAccountCreate(crCopy.Name, cr.Spec.ForProvider.Description)
+		if err != nil {
+			return managed.ExternalCreation{}, err
+		}
+		crCopy.Status.AtProvider.Id = out.Id
+	}
+
+	meta.SetExternalName(cr, crCopy.Name)
+	if err := c.kube.Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
-	cr.Status.AtProvider.Id = out.Id
+	cr.Status.AtProvider.Id = crCopy.Status.AtProvider.Id
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
