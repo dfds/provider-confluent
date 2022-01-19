@@ -3,17 +3,17 @@ apiVersion: kafka.confluent.crossplane.io/v1alpha1
 kind: Topic
 metadata:
   name: confluent-test1
-  # annotations:
-  #   crossplane.io/external-name: confluent-test0
+  annotations:
+    crossplane.io/external-name: confluent-test0
 spec:
   forProvider:
     cluster: ${CONFLUENT_CLUSTER_ID}
     environment: ${CONFLUENT_ENVIRONMENT}
     topic:
       name: confluent-test0
-      partitions: 2
+      partitions: 3
       config:
-        retention: 604800000
-        # retention: 259200000
+        # retention: 604800000
+        retention: 259200000
   providerConfigRef:
     name: confluent-provider
