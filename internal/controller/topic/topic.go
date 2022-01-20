@@ -51,6 +51,7 @@ const (
 	errNewClient                                     = "cannot create new Service"
 	errAuthCredentials                               = "invalid client credentials"
 	errExternalNameAndForProviderTopicNameDoNotMatch = "external name and topic name specified do not match"
+	errDestructiveUpdateNotAllowed                   = "cannot update resource. DeletionPolicy is set to Orphan, but update is destructive"
 )
 
 var (
@@ -315,6 +316,11 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	// Destructive
 	fmt.Println("UPDATE DESCTRUCTIVE:", requireUpdate.IsDestructive())
 	if requireUpdate.IsDestructive() {
+
+		if !DestructiveActionsAllowed(cr.Spec.DeletionPolicy) {
+			return managed.ExternalUpdate{}, errors.New(errDestructiveUpdateNotAllowed)
+		}
+
 		err := client.TopicDelete(v1alpha1.TopicParameters{Cluster: cr.Status.AtProvider.Cluster, Environment: cr.Status.AtProvider.Environment, Topic: v1alpha1.TopicConfig{Name: cr.Status.AtProvider.Name}})
 
 		if err != nil {
