@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	v1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/dfds/provider-confluent/apis/topic/v1alpha1"
 	"github.com/dfds/provider-confluent/internal/clients/topic"
 )
@@ -75,4 +76,8 @@ func (tc *TopicCompare) IsDestructive() bool {
 	}
 
 	return isDestructive
+}
+
+func DestructiveActionsAllowed(dp v1.DeletionPolicy) bool {
+	return dp == "Delete"
 }
