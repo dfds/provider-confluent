@@ -23,6 +23,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -43,12 +44,13 @@ import (
 )
 
 const (
-	errNotMyType       = "managed resource is not a ApiKey custom resource"
-	errTrackPCUsage    = "cannot track ProviderConfig usage"
-	errGetPC           = "cannot get ProviderConfig"
-	errGetCreds        = "cannot get credentials"
-	errNewClient       = "cannot create new Service"
-	errAuthCredentials = "invalid client credentials"
+	errNotMyType                                     = "managed resource is not a ApiKey custom resource"
+	errTrackPCUsage                                  = "cannot track ProviderConfig usage"
+	errGetPC                                         = "cannot get ProviderConfig"
+	errGetCreds                                      = "cannot get credentials"
+	errNewClient                                     = "cannot create new Service"
+	errAuthCredentials                               = "invalid client credentials"
+	errExternalNameAndForProviderTopicNameDoNotMatch = "external name and topic name specified do not match"
 )
 
 var (
@@ -165,6 +167,14 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 	fmt.Println("OBSERVE")
 
+	if meta.GetExternalName(cr) == "" {
+		return managed.ExternalObservation{}, nil
+	} else {
+		if meta.GetExternalName(cr) != cr.Spec.ForProvider.Topic.Name {
+			return managed.ExternalObservation{}, errors.New(errExternalNameAndForProviderTopicNameDoNotMatch)
+		}
+	}
+
 	if cr.Status.AtProvider.Name == "" {
 		return managed.ExternalObservation{
 			ResourceExists:    false,
@@ -232,9 +242,37 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	var client = c.service.(topic.IClient)
-	err := client.TopicCreate(cr.Spec.ForProvider)
+	createObj := cr.Spec.ForProvider.DeepCopy()
+	extName := meta.GetExternalName(cr)
+	resourceNew := true
 
-	if err != nil {
+	if extName != "" {
+		if extName != cr.Spec.ForProvider.Topic.Name {
+			return managed.ExternalCreation{}, errors.New(errExternalNameAndForProviderTopicNameDoNotMatch)
+		}
+		createObj.Topic.Name = extName
+		resourceNew = false
+		_, err := client.TopicDescribe(v1alpha1.TopicObservation{Cluster: cr.Spec.ForProvider.Cluster, Environment: cr.Spec.ForProvider.Environment, Name: meta.GetExternalName(cr)})
+		if err != nil {
+			if err.Error() == topic.ErrUnknownTopic {
+				resourceNew = true
+			} else {
+				return managed.ExternalCreation{}, err
+			}
+		}
+	}
+
+	fmt.Println("CREATE is resource new:", resourceNew)
+
+	if resourceNew {
+		err := client.TopicCreate(*createObj)
+		if err != nil {
+			return managed.ExternalCreation{}, err
+		}
+	}
+
+	meta.SetExternalName(cr, createObj.Topic.Name)
+	if err := c.kube.Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
@@ -294,7 +332,6 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			return managed.ExternalUpdate{}, err
 		}
 	} else {
-		fmt.Println("UPDATE IN-PLACE:", cr.Spec.ForProvider, "with:", observed)
 		err := client.TopicUpdate(cr.Spec.ForProvider)
 		if err != nil {
 			return managed.ExternalUpdate{}, err

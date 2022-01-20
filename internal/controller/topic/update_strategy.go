@@ -1,7 +1,6 @@
 package topic
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/dfds/provider-confluent/apis/topic/v1alpha1"
@@ -9,12 +8,12 @@ import (
 )
 
 type TopicCompare struct {
-	TopicNamesMatch   bool
-	ClusterMatch      bool
-	EnvironmentMatch  bool
-	PartitionsMatch   bool
-	PartitionDecrease bool
-	ConfigMatch       bool
+	TopicNamesMatch  bool
+	ClusterMatch     bool
+	EnvironmentMatch bool
+	PartitionsMatch  bool
+	// PartitionDecrease bool
+	ConfigMatch bool
 }
 
 func updateStrategy(tp v1alpha1.TopicParameters, td topic.TopicDescribeResponse, to v1alpha1.TopicObservation) (TopicCompare, error) {
@@ -45,13 +44,11 @@ func updateStrategy(tp v1alpha1.TopicParameters, td topic.TopicDescribeResponse,
 		compare.PartitionsMatch = true
 
 	} else {
-		if tp.Topic.Partitions < numPartitions {
-			compare.PartitionDecrease = true
-		}
+		// if tp.Topic.Partitions < numPartitions {
+		// 	compare.PartitionDecrease = true
+		// }
 		compare.PartitionsMatch = false
 	}
-
-	fmt.Println("UPDATE_STRATEGY:", compare)
 
 	return compare, nil
 }
