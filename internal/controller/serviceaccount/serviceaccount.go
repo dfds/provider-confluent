@@ -166,9 +166,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
 	}
 
+	// Support for importing resource using exernal name
 	crCopy := cr.DeepCopy()
-	if meta.GetExternalName(cr) != "" { // external name exists
-		crCopy.Name = meta.GetExternalName(cr) // use it
+	if meta.GetExternalName(cr) != "" {
+		crCopy.Name = meta.GetExternalName(cr)
 	}
 
 	// Confluent
