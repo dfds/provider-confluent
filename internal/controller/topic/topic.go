@@ -92,6 +92,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 			usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &apisv1alpha1.ProviderConfigUsage{}),
 			newServiceFn: createAndConvertClientFunc}),
 		managed.WithLogger(l.WithValues("controller", name)),
+		managed.WithInitializers(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))))
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -170,10 +171,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	if meta.GetExternalName(cr) == "" {
 		return managed.ExternalObservation{}, nil
-	} else {
-		if meta.GetExternalName(cr) != cr.Spec.ForProvider.Topic.Name {
-			return managed.ExternalObservation{}, errors.New(errExternalNameAndForProviderTopicNameDoNotMatch)
-		}
+	}
+
+	if meta.GetExternalName(cr) != cr.Spec.ForProvider.Topic.Name {
+		return managed.ExternalObservation{}, errors.New(errExternalNameAndForProviderTopicNameDoNotMatch)
 	}
 
 	if cr.Status.AtProvider.Name == "" {
