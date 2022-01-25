@@ -98,6 +98,7 @@ func (c *Client) ACLList(serviceAccount string, environment string, cluster stri
 	return resp, nil
 }
 
+//TODO: Improve error parsing, e.g. don't always returning errUnknown.
 func errorParser(cmdout []byte) error {
 	str := string(cmdout)
 	// if strings.Contains(str, "Error: environment") && strings.Contains(str, "not found") {

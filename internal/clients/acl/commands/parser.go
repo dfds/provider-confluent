@@ -55,7 +55,6 @@ func ParsePrincipal(principal string) (string, error) {
 
 	serviceAccount := split[1]
 	if !strings.Contains(serviceAccount, "sa-") {
-		fmt.Println("ServiceAccount: ", serviceAccount)
 		return "", errors.New(errPrincipalInvalid)
 	}
 
@@ -71,6 +70,9 @@ func parseResource(cmd *exec.Cmd, rName string, rType string) error {
 		cmd.Args = append(cmd.Args, "--consumer-group", rName)
 		return nil
 	case "CLUSTER":
+		if rName != "" {
+			return errors.New(errResourceNameSpecifiedWithResourceTypeCluster)
+		}
 		cmd.Args = append(cmd.Args, "--cluster-scope")
 		return nil
 	default:
