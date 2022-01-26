@@ -10,3 +10,5 @@ cover.out
 .vscode/
 .idea/
 .env
+profile.out
+main
