@@ -37,7 +37,6 @@ import (
 	apisv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
 
 	"github.com/dfds/provider-confluent/internal/clients"
-	confluentClient "github.com/dfds/provider-confluent/internal/clients"
 	"github.com/dfds/provider-confluent/internal/clients/apikey"
 	"github.com/dfds/provider-confluent/internal/clients/serviceaccount"
 )
@@ -60,7 +59,7 @@ var (
 			return nil, nil, errors.New(errAuthCredentials)
 		}
 
-		cClient := confluentClient.NewClient()
+		cClient := clients.NewClient()
 		authErr := cClient.Authenticate(credParts[0], credParts[1])
 
 		if authErr != nil {
@@ -104,7 +103,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 type connector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(creds []byte, apiCreds confluentClient.APICredentials) (interface{}, interface{}, error)
+	newServiceFn func(creds []byte, apiCreds clients.APICredentials) (interface{}, interface{}, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -132,7 +131,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetCreds)
 	}
 
-	var apiCredentials confluentClient.APICredentials
+	var apiCredentials clients.APICredentials
 
 	for _, value := range pc.Spec.APICredentials {
 		if value.Identifier == v1alpha1.SchemeGroupVersion.Identifier() {
