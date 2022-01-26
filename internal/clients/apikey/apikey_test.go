@@ -31,6 +31,8 @@ func TestAPIKeyLifecycle(t *testing.T) {
 	_, err := client.GetAPIKeyByKey("")
 	if err != nil {
 		assert.Equal(err.Error(), ErrNotExists, "empty key should should return not exists")
+	} else {
+		t.Errorf("api creation with empty service account went through")
 	}
 
 	out, err := client.APIKeyCreate(resource, description, serviceAccount, environment)

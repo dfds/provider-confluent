@@ -39,37 +39,39 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients"
 	confluentClient "github.com/dfds/provider-confluent/internal/clients"
 	"github.com/dfds/provider-confluent/internal/clients/apikey"
+	"github.com/dfds/provider-confluent/internal/clients/serviceaccount"
 )
 
 const (
-	errNotMyType       = "managed resource is not a ApiKey custom resource"
-	errTrackPCUsage    = "cannot track ProviderConfig usage"
-	errGetPC           = "cannot get ProviderConfig"
-	errGetCreds        = "cannot get credentials"
-	errNewClient       = "cannot create new Service"
-	errAuthCredentials = "invalid client credentials"
+	errNotMyType                                 = "managed resource is not a ApiKey custom resource"
+	errTrackPCUsage                              = "cannot track ProviderConfig usage"
+	errGetPC                                     = "cannot get ProviderConfig"
+	errGetCreds                                  = "cannot get credentials"
+	errNewClient                                 = "cannot create new Service"
+	errAuthCredentials                           = "invalid client credentials"
+	errBlockingCreationServiceAccountDoNotExists = "creation blocked service-account referenced do not exists"
 )
 
 var (
-	createAndConvertClientFunc = func(clientCreds []byte, apiCreds clients.APICredentials) (interface{}, error) { //nolint
+	createAndConvertClientFunc = func(clientCreds []byte, apiCreds clients.APICredentials) (interface{}, interface{}, error) { //nolint
 		credParts := strings.Split(string(clientCreds), ":")
 
 		if len(credParts) != 2 {
-			return nil, errors.New(errAuthCredentials)
+			return nil, nil, errors.New(errAuthCredentials)
 		}
 
 		cClient := confluentClient.NewClient()
 		authErr := cClient.Authenticate(credParts[0], credParts[1])
 
 		if authErr != nil {
-			return nil, authErr
+			return nil, nil, authErr
 		}
 
 		srConfig := apikey.Config{
 			APICredentials: apiCreds,
 		}
 
-		return apikey.NewClient(srConfig).(interface{}), nil
+		return apikey.NewClient(srConfig).(interface{}), serviceaccount.NewClient(serviceaccount.Config(srConfig)).(interface{}), nil
 	}
 )
 
@@ -102,7 +104,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 type connector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(creds []byte, apiCreds confluentClient.APICredentials) (interface{}, error)
+	newServiceFn func(creds []byte, apiCreds confluentClient.APICredentials) (interface{}, interface{}, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -140,12 +142,12 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		}
 	}
 
-	svc, err := c.newServiceFn(clientCredentialData, apiCredentials)
+	svc, saSvc, err := c.newServiceFn(clientCredentialData, apiCredentials)
 	if err != nil {
 		return nil, errors.Wrap(err, errNewClient)
 	}
 
-	return &external{service: svc, kube: c.kube}, nil
+	return &external{service: svc, saService: saSvc, kube: c.kube}, nil
 }
 
 // An ExternalClient observes, then either creates, updates, or deletes an
@@ -153,8 +155,9 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 type external struct {
 	// A 'client' used to connect to the external resource API. In practice this
 	// would be something like an AWS SDK client.
-	service interface{}
-	kube    client.Client
+	service   interface{}
+	saService interface{}
+	kube      client.Client
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -209,6 +212,16 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	cr.Status.SetConditions(xpv1.Creating())
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
+		return managed.ExternalCreation{}, err
+	}
+
+	// Need to check if service account is valid otherwise it will return key pair with God like access
+	var saClient = c.saService.(serviceaccount.IClient)
+	_, err := saClient.ServiceAccountById(cr.Spec.ForProvider.ServiceAccount)
+	if err != nil {
+		if err.Error() == serviceaccount.ErrNotExists {
+			return managed.ExternalCreation{}, errors.New(errBlockingCreationServiceAccountDoNotExists)
+		}
 		return managed.ExternalCreation{}, err
 	}
 
