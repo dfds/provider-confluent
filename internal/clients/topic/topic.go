@@ -15,7 +15,7 @@ import (
 const (
 	errUnknown      = "unknown error"
 	ErrUnknownTopic = "unknown topic"
-	ErrInvalidInput = "the input given may be invalid like empty topic name or so"
+	ErrInvalidInput = "input given may be invalid like empty topic name or so"
 )
 
 // NewClient is a factory method for apikey client
