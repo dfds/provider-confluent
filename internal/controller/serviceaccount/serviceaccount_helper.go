@@ -6,11 +6,6 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients/serviceaccount"
 )
 
-const (
-// errTypeIncorrect = "error when casting not of type ServiceAccount"
-// errObserve       = "observe not set call CreateResource() before UpdateResource()"
-)
-
 func ObserveCreateResource(sa *v1alpha1.ServiceAccount, err error) (bool, error) {
 	if err != nil {
 		if err.Error() == serviceaccount.ErrNotExists {

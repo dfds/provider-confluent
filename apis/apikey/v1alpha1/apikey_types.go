@@ -19,7 +19,10 @@ type ApiKeyParameters struct {
 
 // ApiKeyObservation are the observable fields of a ApiKey.
 type ApiKeyObservation struct {
-	Key string `json:"key"`
+	Key            string `json:"key"`
+	Resource       string `json:"resource"`
+	ServiceAccount string `json:"serviceAccount"`
+	Environment    string `json:"environment"`
 }
 
 // ApiKey Spec defines the desired state of a ApiKey.

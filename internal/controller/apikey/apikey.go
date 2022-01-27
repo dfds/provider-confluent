@@ -89,6 +89,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 			usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &apisv1alpha1.ProviderConfigUsage{}),
 			newServiceFn: createAndConvertClientFunc}),
 		managed.WithLogger(l.WithValues("controller", name)),
+		managed.WithInitializers(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))))
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -163,27 +164,34 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr, ok := mg.(*v1alpha1.ApiKey)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
+
 	}
 
-	// Confluent
-	var client = c.service.(apikey.IClient)
-	ccsa, err := client.GetAPIKeyByKey(cr.Status.AtProvider.Key)
+	// Support for importing resource using exernal name
+	key, _ := externalNameHelper(cr)
 
+	// Confluent cloud
+	var client = c.service.(apikey.IClient)
+	observe, err := client.GetApiKeyByKey(key)
+
+	// Check if resource require creation
+	create, err := observeCreateResource(err)
 	if err != nil {
-		if err.Error() == apikey.ErrNotExists {
-			return managed.ExternalObservation{
-				ResourceExists:    false,
-				ConnectionDetails: managed.ConnectionDetails{},
-			}, nil // returning nil because we want create on not found
-		}
 		return managed.ExternalObservation{
 			ResourceExists:    false,
 			ConnectionDetails: managed.ConnectionDetails{},
 		}, err
 	}
 
-	// Diff
-	if cr.Spec.ForProvider.Description != ccsa.Description {
+	if create {
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, nil
+	}
+
+	// Check if resource require update
+	if observeUpdateResource(cr, observe) {
 		return managed.ExternalObservation{
 			ResourceExists:    true,
 			ResourceUpToDate:  false,
@@ -214,8 +222,8 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, err
 	}
 
-	// Need to check if service account is valid otherwise it will return key pair with God like access
-	var saClient = c.saService.(serviceaccount.IClient)
+	// Need to check if service account is valid otherwise it will return key pair with God like access (bug stems from confluent cli)
+	var saClient = c.service.(serviceaccount.IClient)
 	_, err := saClient.ServiceAccountById(cr.Spec.ForProvider.ServiceAccount)
 	if err != nil {
 		if err.Error() == serviceaccount.ErrNotExists {
@@ -224,21 +232,48 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, err
 	}
 
-	var client = c.service.(apikey.IClient)
-	out, err := client.APIKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
+	key, exists := externalNameHelper(cr)
 
-	if err != nil {
-		return managed.ExternalCreation{}, err
+	var createIsImport bool
+
+	conn := managed.ConnectionDetails{}
+
+	var client = c.service.(apikey.IClient)
+
+	if exists {
+		observe, err := client.GetApiKeyByKey(key)
+		createIsImport, err = createResourceIsImport(err)
+		if err != nil {
+			return managed.ExternalCreation{}, err
+		}
+		if createIsImport {
+			cr.Status.AtProvider.Key = observe.Key
+			cr.Status.AtProvider.Environment = observe.Key
+			cr.Status.AtProvider.Resource = cr.Spec.ForProvider.Resource
+			cr.Status.AtProvider.ServiceAccount = cr.Spec.ForProvider.ServiceAccount
+			conn = managed.ConnectionDetails{xpv1.ResourceCredentialsSecretUserKey: []byte(observe.Key),
+				xpv1.ResourceCredentialsSecretPasswordKey: []byte("YOU NEED TO SUPPLY YOUR OWN KEY FOR IMPORTED RESOURCES"),
+			}
+		}
 	}
 
-	cr.Status.AtProvider.Key = out.Key
+	if !createIsImport {
+		out, err := client.ApiKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
+		if err != nil {
+			return managed.ExternalCreation{}, err
+		}
+		cr.Status.AtProvider.Key = out.Key
+		cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
+		cr.Status.AtProvider.Resource = cr.Spec.ForProvider.Resource
+		cr.Status.AtProvider.ServiceAccount = cr.Spec.ForProvider.ServiceAccount
+		conn = managed.ConnectionDetails{
+			xpv1.ResourceCredentialsSecretUserKey:     []byte(out.Key),
+			xpv1.ResourceCredentialsSecretPasswordKey: []byte(out.Secret),
+		}
+	}
+
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
-	}
-
-	conn := managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretUserKey:     []byte(out.Key),
-		xpv1.ResourceCredentialsSecretPasswordKey: []byte(out.Secret),
 	}
 
 	return managed.ExternalCreation{
