@@ -3,7 +3,10 @@ apiVersion: apikey.confluent.crossplane.io/v1alpha1
 kind: ApiKey
 metadata:
   name: crossplane-test
+  # annotations:
+  #   crossplane.io/external-name: 6IM7JX2YTBB5VMGJ
 spec:
+  # deletionPolicy: Orphan
   forProvider:
     description: "crossplane-test0"
     resource: ${CONFLUENT_CLUSTER_ID}

@@ -129,10 +129,19 @@ spec:
               atProvider:
                 description: ApiKeyObservation are the observable fields of a ApiKey.
                 properties:
+                  environment:
+                    type: string
                   key:
                     type: string
+                  resource:
+                    type: string
+                  serviceAccount:
+                    type: string
                 required:
+                - environment
                 - key
+                - resource
+                - serviceAccount
                 type: object
               conditions:
                 description: Conditions of the resource.

@@ -34,7 +34,7 @@ func updateStrategy(ak *v1alpha1.ApiKey, akm apikey.ApiKeyMetadata) ApiKeyCompar
 	return compare
 }
 
-func (ac *ApiKeyCompare) IsDestructive() bool {
+func (ac *ApiKeyCompare) isDestructive() bool {
 	var destructive bool
 
 	if !ac.EnvironmentMatch {
