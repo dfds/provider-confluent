@@ -18,10 +18,12 @@ package apikey
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -37,39 +39,42 @@ import (
 	apisv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
 
 	"github.com/dfds/provider-confluent/internal/clients"
-	confluentClient "github.com/dfds/provider-confluent/internal/clients"
 	"github.com/dfds/provider-confluent/internal/clients/apikey"
+	"github.com/dfds/provider-confluent/internal/clients/serviceaccount"
 )
 
 const (
-	errNotMyType       = "managed resource is not a ApiKey custom resource"
-	errTrackPCUsage    = "cannot track ProviderConfig usage"
-	errGetPC           = "cannot get ProviderConfig"
-	errGetCreds        = "cannot get credentials"
-	errNewClient       = "cannot create new Service"
-	errAuthCredentials = "invalid client credentials"
+	errNotMyType                                 = "managed resource is not a ApiKey custom resource"
+	errTrackPCUsage                              = "cannot track ProviderConfig usage"
+	errGetPC                                     = "cannot get ProviderConfig"
+	errGetCreds                                  = "cannot get credentials"
+	errNewClient                                 = "cannot create new Service"
+	errAuthCredentials                           = "invalid client credentials"
+	errBlockingCreationServiceAccountDoNotExists = "creation blocked service-account referenced do not exists"
+	errExternalNameNotPresent                    = "external name is not present"
+	errDestructiveUpdateNotAllowed               = "cannot update resource. DeletionPolicy is set to Orphan, but update is destructive"
 )
 
 var (
-	createAndConvertClientFunc = func(clientCreds []byte, apiCreds clients.APICredentials) (interface{}, error) { //nolint
+	createAndConvertClientFunc = func(clientCreds []byte, apiCreds clients.APICredentials) (interface{}, interface{}, error) { //nolint
 		credParts := strings.Split(string(clientCreds), ":")
 
 		if len(credParts) != 2 {
-			return nil, errors.New(errAuthCredentials)
+			return nil, nil, errors.New(errAuthCredentials)
 		}
 
-		cClient := confluentClient.NewClient()
+		cClient := clients.NewClient()
 		authErr := cClient.Authenticate(credParts[0], credParts[1])
 
 		if authErr != nil {
-			return nil, authErr
+			return nil, nil, authErr
 		}
 
 		srConfig := apikey.Config{
 			APICredentials: apiCreds,
 		}
 
-		return apikey.NewClient(srConfig).(interface{}), nil
+		return apikey.NewClient(srConfig).(interface{}), serviceaccount.NewClient(serviceaccount.Config(srConfig)).(interface{}), nil
 	}
 )
 
@@ -88,6 +93,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 			usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &apisv1alpha1.ProviderConfigUsage{}),
 			newServiceFn: createAndConvertClientFunc}),
 		managed.WithLogger(l.WithValues("controller", name)),
+		managed.WithInitializers(),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))))
 
 	return ctrl.NewControllerManagedBy(mgr).
@@ -102,7 +108,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 type connector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(creds []byte, apiCreds confluentClient.APICredentials) (interface{}, error)
+	newServiceFn func(creds []byte, apiCreds clients.APICredentials) (interface{}, interface{}, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -130,7 +136,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetCreds)
 	}
 
-	var apiCredentials confluentClient.APICredentials
+	var apiCredentials clients.APICredentials
 
 	for _, value := range pc.Spec.APICredentials {
 		if value.Identifier == v1alpha1.SchemeGroupVersion.Identifier() {
@@ -140,12 +146,12 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		}
 	}
 
-	svc, err := c.newServiceFn(clientCredentialData, apiCredentials)
+	svc, saSvc, err := c.newServiceFn(clientCredentialData, apiCredentials)
 	if err != nil {
 		return nil, errors.Wrap(err, errNewClient)
 	}
 
-	return &external{service: svc, kube: c.kube}, nil
+	return &external{service: svc, saService: saSvc, kube: c.kube}, nil
 }
 
 // An ExternalClient observes, then either creates, updates, or deletes an
@@ -153,35 +159,45 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 type external struct {
 	// A 'client' used to connect to the external resource API. In practice this
 	// would be something like an AWS SDK client.
-	service interface{}
-	kube    client.Client
+	service   interface{}
+	saService interface{}
+	kube      client.Client
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	cr, ok := mg.(*v1alpha1.ApiKey)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
+
 	}
 
-	// Confluent
-	var client = c.service.(apikey.IClient)
-	ccsa, err := client.GetAPIKeyByKey(cr.Status.AtProvider.Key)
+	// Support for importing resource using exernal name
+	key, exists := externalNameHelper(cr)
 
+	// Confluent cloud
+	var client = c.service.(apikey.IClient)
+	observe, err := client.GetAPIKeyByKey(key)
+
+	// Check if resource require creation
+	create, err := observeCreateResource(cr, exists, err)
 	if err != nil {
-		if err.Error() == apikey.ErrNotExists {
-			return managed.ExternalObservation{
-				ResourceExists:    false,
-				ConnectionDetails: managed.ConnectionDetails{},
-			}, nil // returning nil because we want create on not found
-		}
 		return managed.ExternalObservation{
 			ResourceExists:    false,
 			ConnectionDetails: managed.ConnectionDetails{},
 		}, err
 	}
 
-	// Diff
-	if cr.Spec.ForProvider.Description != ccsa.Description {
+	fmt.Println("Observe if should create:", create)
+
+	if create {
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, nil
+	}
+
+	// Check if resource require update
+	if observeUpdateResource(cr, observe) {
 		return managed.ExternalObservation{
 			ResourceExists:    true,
 			ResourceUpToDate:  false,
@@ -212,21 +228,59 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, err
 	}
 
-	var client = c.service.(apikey.IClient)
-	out, err := client.APIKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
-
+	// Need to check if service account is valid otherwise it will return key pair with God like access (bug stems from confluent cli)
+	var saClient = c.saService.(serviceaccount.IClient)
+	_, err := saClient.ServiceAccountByID(cr.Spec.ForProvider.ServiceAccount)
 	if err != nil {
+		if err.Error() == serviceaccount.ErrNotExists {
+			return managed.ExternalCreation{}, errors.New(errBlockingCreationServiceAccountDoNotExists)
+		}
 		return managed.ExternalCreation{}, err
 	}
 
-	cr.Status.AtProvider.Key = out.Key
+	key, exists := externalNameHelper(cr)
+
+	var createIsImport bool
+
+	conn := managed.ConnectionDetails{}
+
+	var client = c.service.(apikey.IClient)
+
+	if exists {
+		observe, err := client.GetAPIKeyByKey(key)
+		createIsImport, err = createResourceIsImport(err)
+		if err != nil {
+			return managed.ExternalCreation{}, err
+		}
+		if createIsImport {
+			cr.Status.AtProvider.Key = observe.Key
+			cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
+			cr.Status.AtProvider.Resource = cr.Spec.ForProvider.Resource
+			cr.Status.AtProvider.ServiceAccount = cr.Spec.ForProvider.ServiceAccount
+			conn = managed.ConnectionDetails{xpv1.ResourceCredentialsSecretUserKey: []byte(observe.Key),
+				xpv1.ResourceCredentialsSecretPasswordKey: []byte("YOU NEED TO SUPPLY YOUR OWN SECRET FOR IMPORTED RESOURCES"),
+			}
+		}
+	}
+
+	if !createIsImport {
+		out, err := client.APIKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
+		if err != nil {
+			return managed.ExternalCreation{}, err
+		}
+		meta.SetExternalName(cr, out.Key)
+		cr.Status.AtProvider.Key = out.Key
+		cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
+		cr.Status.AtProvider.Resource = cr.Spec.ForProvider.Resource
+		cr.Status.AtProvider.ServiceAccount = cr.Spec.ForProvider.ServiceAccount
+		conn = managed.ConnectionDetails{
+			xpv1.ResourceCredentialsSecretUserKey:     []byte(out.Key),
+			xpv1.ResourceCredentialsSecretPasswordKey: []byte(out.Secret),
+		}
+	}
+
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
-	}
-
-	conn := managed.ConnectionDetails{
-		xpv1.ResourceCredentialsSecretUserKey:     []byte(out.Key),
-		xpv1.ResourceCredentialsSecretPasswordKey: []byte(out.Secret),
 	}
 
 	return managed.ExternalCreation{
@@ -242,19 +296,64 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalUpdate{}, errors.New(errNotMyType)
 	}
 
-	var client = c.service.(apikey.IClient)
+	// Use external name since we set in create
+	key, exists := externalNameHelper(cr)
+	if !exists {
+		return managed.ExternalUpdate{}, errors.New(errExternalNameNotPresent)
+	}
 
-	// Update description
-	err := client.APIKeyUpdate(cr.Status.AtProvider.Key, cr.Spec.ForProvider.Description)
+	// Confluent cloud
+	var client = c.service.(apikey.IClient)
+	observed, err := client.GetAPIKeyByKey(key)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
 
-	return managed.ExternalUpdate{
-		// Optionally return any details that may be required to connect to the
-		// external resource. These will be stored as the connection secret.
-		ConnectionDetails: managed.ConnectionDetails{},
-	}, nil
+	// Is update destructive
+	if updateResourceDestructive(cr, observed) {
+		if !destructiveActionsAllowed(cr.GetDeletionPolicy()) {
+			return managed.ExternalUpdate{}, errors.New(errDestructiveUpdateNotAllowed)
+		}
+		// Need to check if service account is valid otherwise it will return key pair with God like access (bug stems from confluent cli)
+		var saClient = c.saService.(serviceaccount.IClient)
+		_, err := saClient.ServiceAccountByID(cr.Spec.ForProvider.ServiceAccount)
+		if err != nil {
+			if err.Error() == serviceaccount.ErrNotExists {
+				return managed.ExternalUpdate{}, errors.New(errBlockingCreationServiceAccountDoNotExists)
+			}
+			return managed.ExternalUpdate{}, err
+		}
+
+		// Continue with desctructive action
+		err = client.APIKeyDelete(key)
+		if err != nil {
+			return managed.ExternalUpdate{}, err
+		}
+
+		out, err := client.APIKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
+		if err != nil {
+			return managed.ExternalUpdate{}, err
+		}
+		cr.Status.AtProvider.Key = out.Key
+		cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
+		cr.Status.AtProvider.Resource = cr.Spec.ForProvider.Resource
+		cr.Status.AtProvider.ServiceAccount = cr.Spec.ForProvider.ServiceAccount
+		conn := managed.ConnectionDetails{
+			xpv1.ResourceCredentialsSecretUserKey:     []byte(out.Key),
+			xpv1.ResourceCredentialsSecretPasswordKey: []byte(out.Secret),
+		}
+		if err := c.kube.Status().Update(ctx, cr); err != nil {
+			return managed.ExternalUpdate{}, err
+		}
+		return managed.ExternalUpdate{ConnectionDetails: conn}, nil
+	} else {
+		// Continue with non-destructive action
+		err = client.APIKeyUpdate(key, cr.Spec.ForProvider.Description)
+		if err != nil {
+			return managed.ExternalUpdate{}, err
+		}
+		return managed.ExternalUpdate{}, nil
+	}
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) error {

@@ -12,9 +12,8 @@ import (
 var (
 	testConfig = Config{
 		APICredentials: clients.APICredentials{
-			Identifier: "FOO",
-			Key:        config.GetEnvValue("CONFLUENT_PROVIDER_API_KEY", ""),
-			Secret:     config.GetEnvValue("CONFLUENT_PROVIDER_API_SECRET", ""),
+			Key:    config.GetEnvValue("CONFLUENT_PROVIDER_API_KEY", ""),
+			Secret: config.GetEnvValue("CONFLUENT_PROVIDER_API_SECRET", ""),
 		},
 	}
 	resource       = config.GetEnvValue("CONFLUENT_CLUSTER_ID", "")
@@ -31,6 +30,8 @@ func TestAPIKeyLifecycle(t *testing.T) {
 	_, err := client.GetAPIKeyByKey("")
 	if err != nil {
 		assert.Equal(err.Error(), ErrNotExists, "empty key should should return not exists")
+	} else {
+		t.Errorf("api creation with empty service account went through")
 	}
 
 	out, err := client.APIKeyCreate(resource, description, serviceAccount, environment)

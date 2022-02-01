@@ -18,7 +18,6 @@ package serviceaccount
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -39,9 +38,7 @@ import (
 	apisv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
 
 	"github.com/dfds/provider-confluent/internal/clients"
-	confluentClient "github.com/dfds/provider-confluent/internal/clients"
 	"github.com/dfds/provider-confluent/internal/clients/serviceaccount"
-	serviceaccountClient "github.com/dfds/provider-confluent/internal/clients/serviceaccount"
 )
 
 const (
@@ -61,18 +58,18 @@ var (
 			return nil, errors.New(errAuthCredentials)
 		}
 
-		cClient := confluentClient.NewClient()
+		cClient := clients.NewClient()
 		authErr := cClient.Authenticate(credParts[0], credParts[1])
 
 		if authErr != nil {
 			return nil, authErr
 		}
 
-		srConfig := serviceaccountClient.Config{
+		srConfig := serviceaccount.Config{
 			APICredentials: apiCreds,
 		}
 
-		return serviceaccountClient.NewClient(srConfig).(interface{}), nil
+		return serviceaccount.NewClient(srConfig).(interface{}), nil
 	}
 )
 
@@ -105,7 +102,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 type connector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(creds []byte, apiCreds confluentClient.APICredentials) (interface{}, error)
+	newServiceFn func(creds []byte, apiCreds clients.APICredentials) (interface{}, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -133,7 +130,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetCreds)
 	}
 
-	var apiCredentials confluentClient.APICredentials
+	var apiCredentials clients.APICredentials
 
 	for _, value := range pc.Spec.APICredentials {
 		if value.Identifier == v1alpha1.SchemeGroupVersion.Identifier() {
@@ -167,39 +164,31 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	// Support for importing resource using exernal name
-	crCopy := cr.DeepCopy()
-	if meta.GetExternalName(cr) != "" {
-		crCopy.Name = meta.GetExternalName(cr)
-	}
+	name, _ := ExternalNameHelper(cr)
 
 	// Confluent
 	var client = c.service.(serviceaccount.IClient)
-	ccsa, err := client.ServiceAccountByName(crCopy.Name)
+	observe, err := client.ServiceAccountByName(name)
 
+	// Check if resource require creation
+	create, err := ObserveCreateResource(cr, err)
 	if err != nil {
-		if err.Error() == serviceaccount.ErrNotExists {
-			return managed.ExternalObservation{
-				ResourceExists:    false,
-				ConnectionDetails: managed.ConnectionDetails{},
-			}, nil // returning nil because we want create on not found
-		} else {
-			return managed.ExternalObservation{
-				ResourceExists:    false,
-				ConnectionDetails: managed.ConnectionDetails{},
-			}, err
-		}
-	}
-
-	if cr.Status.AtProvider.ID == "" {
 		return managed.ExternalObservation{
 			ResourceExists:    false,
-			ResourceUpToDate:  false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, err
+	}
+
+	if create {
+		return managed.ExternalObservation{
+			ResourceExists:    false,
 			ConnectionDetails: managed.ConnectionDetails{},
 		}, nil
 	}
 
-	// Diff
-	if cr.Spec.ForProvider.Description != ccsa.Description {
+	// Check if resource require update
+	update := ObserveUpdateResource(cr, observe)
+	if update {
 		return managed.ExternalObservation{
 			ResourceExists:    true,
 			ResourceUpToDate:  false,
@@ -229,43 +218,37 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
+
+	name, exists := ExternalNameHelper(cr)
+
+	var createIsImport bool
+
 	var client = c.service.(serviceaccount.IClient)
-	crCopy := cr.DeepCopy()
-	resourceNew := true
 
-	if meta.GetExternalName(cr) != "" {
-		crCopy.Name = meta.GetExternalName(cr)
-
-		resp, err := client.ServiceAccountByName(crCopy.Name)
-		if err != nil {
-			if err.Error() == serviceaccount.ErrNotExists {
-				// returning nil because we want create on not found
-
-			} else {
-				return managed.ExternalCreation{}, err
-			}
-		} else {
-			resourceNew = false
-			crCopy.Status.AtProvider.ID = resp.ID
-
-		}
-	}
-
-	fmt.Println("CREATE is resource new:", resourceNew)
-	if resourceNew {
-		out, err := client.ServiceAccountCreate(crCopy.Name, cr.Spec.ForProvider.Description)
+	if exists {
+		observe, err := client.ServiceAccountByName(name) // not sure if ExternalName is empty
+		createIsImport, err = CreateResourceIsImport(err)
 		if err != nil {
 			return managed.ExternalCreation{}, err
 		}
-		crCopy.Status.AtProvider.ID = out.ID
+		if createIsImport {
+			cr.Status.AtProvider.ID = observe.ID
+		}
 	}
 
-	meta.SetExternalName(cr, crCopy.Name)
+	if !createIsImport {
+		out, err := client.ServiceAccountCreate(name, cr.Spec.ForProvider.Description)
+		if err != nil {
+			return managed.ExternalCreation{}, err
+		}
+		cr.Status.AtProvider.ID = out.ID
+	}
+
+	meta.SetExternalName(cr, name)
 	if err := c.kube.Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
 
-	cr.Status.AtProvider.ID = crCopy.Status.AtProvider.ID
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}

@@ -4,6 +4,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+
+	"github.com/pkg/errors"
+)
+
+const (
+	errNotLoggedIn = "not logged in"
 )
 
 // IClient interface for confluent client
@@ -35,10 +41,8 @@ func (c *Client) Authenticate(email string, password string) error {
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, fmt.Sprintf("%v=%v", ConflientUsernameEnvKey, email), fmt.Sprintf("%v=%v", ConfluentPasswordEnvKey, password))
 	cmdOutput, err := cmd.CombinedOutput()
-
 	if err != nil {
-		fmt.Println("Not logged in:", err)
-		fmt.Println(cmdOutput)
+		return errors.Wrap(errors.New(errNotLoggedIn), string(cmdOutput))
 	}
 
 	return err

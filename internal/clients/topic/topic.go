@@ -15,6 +15,7 @@ import (
 const (
 	errUnknown      = "unknown error"
 	ErrUnknownTopic = "unknown topic"
+	ErrInvalidInput = "input given may be invalid like empty topic name or so"
 )
 
 // NewClient is a factory method for apikey client
@@ -83,6 +84,8 @@ func errorParser(cmdout []byte) error {
 	str := string(cmdout)
 	if strings.Contains(str, "Error: unknown topic") {
 		return errors.New(ErrUnknownTopic)
+	} else if strings.Contains(str, "Error: REST request failed") {
+		return errors.New(ErrInvalidInput)
 	}
 	return errors.Wrap(errors.New(errUnknown), str)
 }
