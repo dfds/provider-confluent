@@ -36,17 +36,17 @@ func TestServiceAccountLifecycle(t *testing.T) {
 		t.Errorf("could not get already created service account by name")
 	}
 
-	_, err = client.ServiceAccountById(resp.Id)
+	_, err = client.ServiceAccountByID(resp.ID)
 	if err != nil {
 		t.Errorf("could not get already created service account by id")
 	}
 
-	err = client.ServiceAccountUpdate(resp.Id, "crossplane-test-update")
+	err = client.ServiceAccountUpdate(resp.ID, "crossplane-test-update")
 	if err != nil {
 		t.Errorf("update does not work as indented")
 	}
 
-	err = client.ServiceAccountDelete(resp.Id)
+	err = client.ServiceAccountDelete(resp.ID)
 	if err != nil {
 		t.Errorf("delete does not work as indented")
 	}

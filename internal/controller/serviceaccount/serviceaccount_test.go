@@ -50,7 +50,7 @@ func TestCreateResource(t *testing.T) {
 	}
 
 	// Resource has status
-	sa.Status.AtProvider.Id = "sa-55555"
+	sa.Status.AtProvider.ID = "sa-55555"
 	create, err = ObserveCreateResource(&sa, nil)
 	if err != nil {
 		t.Errorf("no error expected when non given")
