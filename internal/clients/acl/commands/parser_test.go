@@ -2,13 +2,14 @@ package commands
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"os/exec"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
-	saId  = "sa-12351"
+	saID  = "sa-12351"
 	rName = "testingaclResourceName"
 )
 
@@ -17,10 +18,8 @@ func TestParsePatternType(t *testing.T) {
 	err := parsePatternType(&exec.Cmd{}, "")
 	if err == nil {
 		t.Errorf("Expected error from parsePatternType with empty patternType arg")
-	} else {
-		if err.Error() != errPatternInvalid {
-			t.Error(err)
-		}
+	} else if err.Error() != errPatternInvalid {
+		t.Error(err)
 	}
 
 	err = parsePatternType(&exec.Cmd{}, "LITERAL")
@@ -47,10 +46,8 @@ func TestParsePermission(t *testing.T) {
 	err := parsePermission(&exec.Cmd{}, "")
 	if err == nil {
 		t.Errorf("Expected error from parsePermission with empty permission arg")
-	} else {
-		if err.Error() != errPermissionInvalid {
-			t.Error(err)
-		}
+	} else if err.Error() != errPermissionInvalid {
+		t.Error(err)
 	}
 
 	cmd := exec.Cmd{}
@@ -82,13 +79,13 @@ func TestParseServiceAccount(t *testing.T) {
 	assert := assert.New(t)
 
 	cmd := exec.Cmd{}
-	err := parseServiceAccount(&cmd, fmt.Sprintf("User:%s", saId))
+	err := parseServiceAccount(&cmd, fmt.Sprintf("User:%s", saID))
 	if err != nil {
 		t.Error(err)
 	} else {
 		if len(cmd.Args) == 2 {
 			assert.Equal(cmd.Args[0], "--service-account")
-			assert.Equal(cmd.Args[1], saId)
+			assert.Equal(cmd.Args[1], saID)
 		} else {
 			t.Errorf("cmd.Args contains more or less than 2 element.")
 		}
@@ -113,12 +110,12 @@ func TestParsePrincipal(t *testing.T) {
 		assert.Equal(err.Error(), errPrincipalInvalid)
 	}
 
-	sa, err := ParsePrincipal(fmt.Sprintf("User:%s", saId))
+	sa, err := ParsePrincipal(fmt.Sprintf("User:%s", saID))
 	if err != nil {
 		t.Error(err)
 	}
 
-	assert.Equal(sa, saId)
+	assert.Equal(sa, saID)
 }
 
 func TestParseResource(t *testing.T) {
@@ -127,10 +124,8 @@ func TestParseResource(t *testing.T) {
 	err := parseResource(&exec.Cmd{}, "", "")
 	if err == nil {
 		t.Errorf("Expected error from parseResource with empty rName arg && empty rType arg")
-	} else {
-		if err.Error() != errResourceTypeInvalid {
-			t.Error(err)
-		}
+	} else if err.Error() != errResourceTypeInvalid {
+		t.Error(err)
 	}
 
 	cmd := exec.Cmd{}
@@ -175,9 +170,7 @@ func TestParseResource(t *testing.T) {
 	err = parseResource(&cmd, rName, "CLUSTER")
 	if err == nil {
 		t.Errorf("Expected error from parseResource with rType arg set to CLUSTER & rName arg not being empty")
-	} else {
-		if err.Error() != errResourceNameSpecifiedWithResourceTypeCluster {
-			t.Error(err)
-		}
+	} else if err.Error() != errResourceNameSpecifiedWithResourceTypeCluster {
+		t.Error(err)
 	}
 }

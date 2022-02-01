@@ -2,11 +2,12 @@ package acl
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/dfds/provider-confluent/apis/acl/v1alpha1"
 	"github.com/dfds/provider-confluent/internal/clients"
 	"github.com/stretchr/testify/assert"
 	"go.dfds.cloud/utils/config"
-	"testing"
 )
 
 // Assign
@@ -21,7 +22,6 @@ var (
 	resource       = config.GetEnvValue("CONFLUENT_CLUSTER_ID", "")
 	environment    = config.GetEnvValue("CONFLUENT_ENVIRONMENT", "")
 	serviceAccount = config.GetEnvValue("CONFLUENT_SERVICEACCOUNT", "")
-	description    = "crossplane-test"
 	client         = NewClient(testConfig)
 	aclParam       = v1alpha1.ACLParameters{
 		ACLRule: v1alpha1.ACLRule{
