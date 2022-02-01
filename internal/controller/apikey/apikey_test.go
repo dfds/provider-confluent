@@ -34,28 +34,44 @@ func TestObserveCreateResource(t *testing.T) {
 	assert := assert.New(t)
 
 	// Resource do not exists
-	create, err := observeCreateResource(errors.New(apikey.ErrNotExists))
+	ak := v1alpha1.ApiKey{}
+	create, err := observeCreateResource(&ak, false, errors.New(apikey.ErrNotExists))
 	if err != nil {
 		t.Errorf("no error expected when ErrorNotExists is passed to function")
 	} else {
 		assert.True(create, "resource do not exists so it should create")
 	}
 
+	create, err = observeCreateResource(&ak, true, errors.New(apikey.ErrNotExists))
+	if err != nil {
+		assert.Equal(err.Error(), errCouldImportResource, "cannot import resource due to weird usage of external name")
+	} else {
+		t.Errorf("error and external name given expected returned error but go non")
+	}
+
 	// Resource exists
-	create, err = observeCreateResource(nil)
+	create, err = observeCreateResource(&ak, true, nil)
 	if err != nil {
 		t.Errorf("no error expected when non given")
 	} else {
-		assert.False(create, "resource has not status set so it should create")
+		assert.True(create, "resource has no status set so it should create")
+	}
+
+	ak.Status.AtProvider.Key = "XXXXX"
+	create, err = observeCreateResource(&ak, true, nil)
+	if err != nil {
+		t.Errorf("no error expected when non given")
+	} else {
+		assert.False(create, "resource has status set so it should not create")
 	}
 
 	// Unknow error
 	const uErr = "unknown"
-	_, err = observeCreateResource(errors.New(uErr))
+	_, err = observeCreateResource(&ak, true, errors.New(uErr))
 	if err == nil {
 		t.Errorf("error expected when given")
 	} else {
-		assert.Equal(err.Error(), uErr)
+		assert.Equal(err.Error(), uErr, "expected same unknow error as input error")
 	}
 }
 
