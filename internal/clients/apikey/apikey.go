@@ -46,7 +46,7 @@ func (c *Client) APIKeyCreate(resource string, description string, serviceAccoun
 
 // GetAPIKeyByKey get API key by key
 func (c *Client) GetAPIKeyByKey(key string) (Metadata, error) {
-	var resp APIKeyList
+	var resp List
 	var akm Metadata
 
 	var cmd = commands.NewAPIKeyListCommand()
@@ -107,6 +107,6 @@ func errorParser(cmdout []byte) error {
 	case strings.Contains(str, "Error: Unknown API key"):
 		return errors.New(errUnknownAPIKey)
 	default:
-		return errors.Wrap(errors.New(errUnknown), string(str))
+		return errors.Wrap(errors.New(errUnknown), str)
 	}
 }

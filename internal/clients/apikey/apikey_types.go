@@ -37,4 +37,5 @@ type Metadata struct {
 	ResourceType    string `json:"resource_type"`
 }
 
-type APIKeyList []Metadata
+// List response from list method
+type List []Metadata
