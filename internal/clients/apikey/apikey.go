@@ -2,7 +2,6 @@ package apikey
 
 import (
 	"encoding/json"
-	"os/exec"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -18,7 +17,7 @@ const (
 	errServiceAccountNotFoundOrLimitReached = "service not found or limit reached"
 	errResourceNotFoundOrAccessForbidden    = "resource not found or access forbidden"
 	ErrNotExists                            = "api key does not exists"
-	errUnknownApiKey                        = "unknow apikey"
+	errUnknownAPIKey                        = "unknow apikey"
 )
 
 // NewClient is a factory method for apikey client
@@ -26,11 +25,12 @@ func NewClient(c Config) IClient {
 	return &Client{Config: c}
 }
 
-func (c *Client) ApiKeyCreate(resource string, description string, serviceAccount string, environment string) (ApiKey, error) {
-	var resp ApiKey
+// APIKeyCreate create API key
+func (c *Client) APIKeyCreate(resource string, description string, serviceAccount string, environment string) (APIKey, error) {
+	var resp APIKey
 
-	var cmd = commands.NewApiKeyCreateCommand(resource, description, serviceAccount, environment)
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+	var cmd = commands.NewAPIKeyCreateCommand(resource, description, serviceAccount, environment)
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return resp, errorParser(out)
@@ -44,12 +44,13 @@ func (c *Client) ApiKeyCreate(resource string, description string, serviceAccoun
 	return resp, nil
 }
 
-func (c *Client) GetApiKeyByKey(key string) (ApiKeyMetadata, error) {
-	var resp ApiKeyList
-	var akm ApiKeyMetadata
+// GetAPIKeyByKey get API key by key
+func (c *Client) GetAPIKeyByKey(key string) (APIKeyMetadata, error) {
+	var resp APIKeyList
+	var akm APIKeyMetadata
 
-	var cmd = commands.NewApiKeyListCommand()
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+	var cmd = commands.NewAPIKeyListCommand()
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return akm, errorParser(out)
@@ -70,9 +71,10 @@ func (c *Client) GetApiKeyByKey(key string) (ApiKeyMetadata, error) {
 	return akm, errors.New(ErrNotExists)
 }
 
-func (c *Client) ApiKeyUpdate(key string, description string) error {
-	var cmd = commands.NewApiKeyUpdateCommand(key, description)
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+// APIKeyUpdate update API key description by key
+func (c *Client) APIKeyUpdate(key string, description string) error {
+	var cmd = commands.NewAPIKeyUpdateCommand(key, description)
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return errorParser(out)
@@ -81,9 +83,10 @@ func (c *Client) ApiKeyUpdate(key string, description string) error {
 	return nil
 }
 
-func (c *Client) ApiKeyDelete(id string) error {
-	var cmd = commands.NewApiKeyDeleteCommand(id)
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+// APIKeyDelete delete API key by key
+func (c *Client) APIKeyDelete(key string) error {
+	var cmd = commands.NewAPIKeyDeleteCommand(key)
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return errorParser(out)
@@ -102,7 +105,7 @@ func errorParser(cmdout []byte) error {
 	case strings.Contains(str, "Error: Kafka cluster not found or access forbidden"):
 		return errors.New(errResourceNotFoundOrAccessForbidden)
 	case strings.Contains(str, "Error: Unknown API key"):
-		return errors.New(errUnknownApiKey)
+		return errors.New(errUnknownAPIKey)
 	default:
 		return errors.Wrap(errors.New(errUnknown), string(str))
 	}

@@ -4,11 +4,11 @@ import "github.com/dfds/provider-confluent/internal/clients"
 
 // IClient interface for service account client
 type IClient interface {
-	ApiKeyCreate(resource string, description string, serviceAccount string, environment string) (ApiKey, error)
-	ApiKeyDelete(key string) error
-	// ApiKeyList() (ApiKeyList, error)
-	GetApiKeyByKey(key string) (ApiKeyMetadata, error)
-	ApiKeyUpdate(key string, description string) error
+	APIKeyCreate(resource string, description string, serviceAccount string, environment string) (APIKey, error)
+	APIKeyDelete(key string) error
+	// APIKeyList() (APIKeyList, error)
+	GetAPIKeyByKey(key string) (APIKeyMetadata, error)
+	APIKeyUpdate(key string, description string) error
 }
 
 // Config is a configuration element for the service account client
@@ -21,12 +21,12 @@ type Client struct {
 	Config Config
 }
 
-type ApiKey struct {
+type APIKey struct {
 	Key    string `json:"key"`
 	Secret string `json:"secret"`
 }
 
-type ApiKeyMetadata struct {
+type APIKeyMetadata struct {
 	Created         string `json:"created"`
 	Description     string `json:"description"`
 	Key             string `json:"key"`
@@ -36,4 +36,4 @@ type ApiKeyMetadata struct {
 	ResourceType    string `json:"resource_type"`
 }
 
-type ApiKeyList []ApiKeyMetadata
+type APIKeyList []APIKeyMetadata

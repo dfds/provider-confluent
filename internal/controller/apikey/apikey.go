@@ -165,7 +165,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 
 	// Confluent
 	var client = c.service.(apikey.IClient)
-	ccsa, err := client.GetApiKeyByKey(cr.Status.AtProvider.Key)
+	ccsa, err := client.GetAPIKeyByKey(cr.Status.AtProvider.Key)
 
 	if err != nil {
 		if err.Error() == apikey.ErrNotExists {
@@ -173,12 +173,11 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 				ResourceExists:    false,
 				ConnectionDetails: managed.ConnectionDetails{},
 			}, nil // returning nil because we want create on not found
-		} else {
-			return managed.ExternalObservation{
-				ResourceExists:    false,
-				ConnectionDetails: managed.ConnectionDetails{},
-			}, err
 		}
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, err
 	}
 
 	// Diff
@@ -214,7 +213,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	var client = c.service.(apikey.IClient)
-	out, err := client.ApiKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
+	out, err := client.APIKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
 
 	if err != nil {
 		return managed.ExternalCreation{}, err
@@ -246,7 +245,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	var client = c.service.(apikey.IClient)
 
 	// Update description
-	err := client.ApiKeyUpdate(cr.Status.AtProvider.Key, cr.Spec.ForProvider.Description)
+	err := client.APIKeyUpdate(cr.Status.AtProvider.Key, cr.Spec.ForProvider.Description)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
@@ -271,7 +270,7 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	var client = c.service.(apikey.IClient)
 
-	err := client.ApiKeyDelete(cr.Status.AtProvider.Key)
+	err := client.APIKeyDelete(cr.Status.AtProvider.Key)
 	if err != nil {
 		return err
 	}

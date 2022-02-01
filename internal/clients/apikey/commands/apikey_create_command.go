@@ -6,12 +6,9 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients"
 )
 
-// ApiKeyCreateCommand is a struct for ApiKey create command
-type ApiKeyCreateCommand exec.Cmd
-
-// NewApiKeyCreateCommand is a factory method for ApiKey create command
-func NewApiKeyCreateCommand(resource string, description string, serviceAccount string, environment string) ApiKeyCreateCommand {
-	var command = ApiKeyCreateCommand{
+// NewAPIKeyCreateCommand is a factory method for ApiKey create command
+func NewAPIKeyCreateCommand(resource string, description string, serviceAccount string, environment string) exec.Cmd {
+	var command = exec.Cmd{
 		Path: clients.CliName,
 		Args: []string{"api-key", "create", "--resource", resource, "--description", description, "--service-account", serviceAccount, "--environment", environment, "-o", "json"},
 	}

@@ -25,35 +25,35 @@ var (
 )
 
 // Asses and assert
-func TestApiKeyLifecycle(t *testing.T) {
+func TestAPIKeyLifecycle(t *testing.T) {
 	assert := assert.New(t)
 
-	_, err := client.GetApiKeyByKey("")
+	_, err := client.GetAPIKeyByKey("")
 	if err != nil {
 		assert.Equal(err.Error(), ErrNotExists, "empty key should should return not exists")
 	}
 
-	out, err := client.ApiKeyCreate(resource, description, serviceAccount, environment)
+	out, err := client.APIKeyCreate(resource, description, serviceAccount, environment)
 	if err != nil {
 		t.Errorf("api-key creation not working")
 	}
 
-	_, err = client.GetApiKeyByKey(out.Key)
+	_, err = client.GetAPIKeyByKey(out.Key)
 	if err != nil {
 		t.Errorf("api-key get by key not working")
 	}
 
-	err = client.ApiKeyUpdate(out.Key, "crossplane-test0")
+	err = client.APIKeyUpdate(out.Key, "crossplane-test0")
 	if err != nil {
 		t.Errorf("api-key update not working")
 	}
 
-	err = client.ApiKeyDelete(out.Key)
+	err = client.APIKeyDelete(out.Key)
 	if err != nil {
 		t.Errorf("api-key delete not working manual OBS: clean up required, please run the following command \"confluent api-key list | grep \"crossplane-test\" | awk '{ print $1 }' | xargs -I {} confluent api-key delete {}\"")
 	}
 
-	_, err = client.GetApiKeyByKey(out.Key)
+	_, err = client.GetAPIKeyByKey(out.Key)
 	if err != nil {
 		assert.Equal(err.Error(), ErrNotExists, "deleted key should should return not exists")
 	}
