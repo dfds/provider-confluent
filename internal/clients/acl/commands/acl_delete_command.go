@@ -1,8 +1,9 @@
 package commands
 
 import (
-	"github.com/dfds/provider-confluent/apis/acl/v1alpha1"
 	"os/exec"
+
+	"github.com/dfds/provider-confluent/apis/acl/v1alpha1"
 
 	"github.com/dfds/provider-confluent/internal/clients"
 )

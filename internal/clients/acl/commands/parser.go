@@ -41,6 +41,7 @@ func parseServiceAccount(cmd *exec.Cmd, principal string) error {
 	return nil
 }
 
+// ParsePrincipal helper method
 func ParsePrincipal(principal string) (string, error) {
 	fmt.Println("Principal: ", principal)
 	split := strings.Split(principal, ":")
