@@ -246,7 +246,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 			}
 		} else {
 			resourceNew = false
-			crCopy.Status.AtProvider.ID = resp.Id
+			crCopy.Status.AtProvider.ID = resp.ID
 
 		}
 	}
@@ -257,7 +257,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		if err != nil {
 			return managed.ExternalCreation{}, err
 		}
-		crCopy.Status.AtProvider.ID = out.Id
+		crCopy.Status.AtProvider.ID = out.ID
 	}
 
 	meta.SetExternalName(cr, crCopy.Name)

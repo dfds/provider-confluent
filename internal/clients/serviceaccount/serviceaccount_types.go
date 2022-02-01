@@ -8,7 +8,7 @@ type IClient interface {
 	ServiceAccountDelete(id string) error
 	ServiceAccountList() ([]ServiceAccount, error)
 	ServiceAccountByName(name string) (ServiceAccount, error)
-	ServiceAccountById(id string) (ServiceAccount, error)
+	ServiceAccountByID(id string) (ServiceAccount, error)
 	ServiceAccountUpdate(id string, description string) error
 }
 
@@ -22,10 +22,12 @@ type Client struct {
 	Config Config
 }
 
+// ServiceAccount struct for deserialising Confluent Cloud response
 type ServiceAccount struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Id          string `json:"id"`
+	ID          string `json:"id"`
 }
 
-type ServiceAccountList []ServiceAccount
+// List type for deserialising Confluent Cloud list response
+type List []ServiceAccount

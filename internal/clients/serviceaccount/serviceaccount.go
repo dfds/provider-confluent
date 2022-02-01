@@ -69,7 +69,7 @@ func (c *Client) ServiceAccountList() ([]ServiceAccount, error) {
 		return []ServiceAccount{}, errors.Wrap(err, string(out))
 	}
 
-	var resp ServiceAccountList
+	var resp List
 	err = json.Unmarshal(out, &resp)
 	if err != nil {
 		return []ServiceAccount{}, err
@@ -78,8 +78,8 @@ func (c *Client) ServiceAccountList() ([]ServiceAccount, error) {
 	return resp, errors.New(ErrNotExists)
 }
 
-// ServiceAccountById Executes Confluent CLI command to list all ServiceAccounts in Confluent Cloud, filter by id & return a non-empty ServiceAccount object if found
-func (c *Client) ServiceAccountById(id string) (ServiceAccount, error) {
+// ServiceAccountByID Executes Confluent CLI command to list all ServiceAccounts in Confluent Cloud, filter by id & return a non-empty ServiceAccount object if found
+func (c *Client) ServiceAccountByID(id string) (ServiceAccount, error) {
 	var cmd = commands.NewServiceAccountListCommand()
 	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
 
@@ -87,14 +87,14 @@ func (c *Client) ServiceAccountById(id string) (ServiceAccount, error) {
 		return ServiceAccount{}, errors.Wrap(err, string(out))
 	}
 
-	var resp ServiceAccountList
+	var resp List
 	err = json.Unmarshal(out, &resp)
 	if err != nil {
 		return ServiceAccount{}, err
 	}
 
 	for _, v := range resp {
-		if v.Id == id {
+		if v.ID == id {
 			return v, nil
 		}
 	}
@@ -111,7 +111,7 @@ func (c *Client) ServiceAccountByName(name string) (ServiceAccount, error) {
 		return ServiceAccount{}, errors.Wrap(err, string(out))
 	}
 
-	var resp ServiceAccountList
+	var resp List
 	err = json.Unmarshal(out, &resp)
 	if err != nil {
 		return ServiceAccount{}, err
