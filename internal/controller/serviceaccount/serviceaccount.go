@@ -179,13 +179,6 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}, err
 	}
 
-	if cr.Status.AtProvider.ID == "" {
-		return managed.ExternalObservation{
-			ResourceExists:    false,
-			ConnectionDetails: managed.ConnectionDetails{},
-		}, err
-	}
-
 	if create {
 		return managed.ExternalObservation{
 			ResourceExists:    false,

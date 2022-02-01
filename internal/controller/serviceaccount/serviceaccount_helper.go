@@ -16,7 +16,7 @@ func ObserveCreateResource(sa *v1alpha1.ServiceAccount, err error) (bool, error)
 	}
 
 	// Check status
-	if sa.Status.AtProvider.Id == "" {
+	if sa.Status.AtProvider.ID == "" {
 		return true, nil
 	}
 
