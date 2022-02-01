@@ -17,7 +17,7 @@ type TopicCompare struct {
 	ConfigMatch bool
 }
 
-func updateStrategy(tp v1alpha1.TopicParameters, td topic.TopicDescribeResponse, to v1alpha1.TopicObservation) (TopicCompare, error) {
+func updateStrategy(tp v1alpha1.TopicParameters, td topic.DescribeResponse, to v1alpha1.TopicObservation) (TopicCompare, error) {
 	var compare TopicCompare
 
 	if tp.Topic.Name == td.TopicName {

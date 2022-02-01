@@ -2,7 +2,6 @@ package topic
 
 import (
 	"encoding/json"
-	"os/exec"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -23,10 +22,11 @@ func NewClient(c Config) IClient {
 	return &Client{Config: c}
 }
 
+// TopicCreate Executes Confluent CLI command to create a Topic in Confluent Cloud
 func (c *Client) TopicCreate(tp v1alpha1.TopicParameters) error {
 
 	var cmd = commands.NewTopicCreateCommand(tp)
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return errorParser(out)
@@ -35,11 +35,12 @@ func (c *Client) TopicCreate(tp v1alpha1.TopicParameters) error {
 	return nil
 }
 
-func (c *Client) TopicDescribe(to v1alpha1.TopicObservation) (TopicDescribeResponse, error) {
-	var resp TopicDescribeResponse
+// TopicDescribe Executes Confluent CLI command to retrieve metadata about a Topic from Confluent Cloud
+func (c *Client) TopicDescribe(to v1alpha1.TopicObservation) (DescribeResponse, error) {
+	var resp DescribeResponse
 
 	cmd := commands.NewTopicDescribeCommand(to)
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return resp, errorParser(out)
@@ -53,10 +54,11 @@ func (c *Client) TopicDescribe(to v1alpha1.TopicObservation) (TopicDescribeRespo
 	return resp, nil
 }
 
+// TopicUpdate Executes Confluent CLI command, and with its given TopicParameters, attempts to update a Topic in Confluent Cloud
 func (c *Client) TopicUpdate(tp v1alpha1.TopicParameters) error {
 
 	cmd := commands.NewTopicUpdateCommand(tp)
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return errorParser(out)
@@ -65,9 +67,10 @@ func (c *Client) TopicUpdate(tp v1alpha1.TopicParameters) error {
 	return nil
 }
 
+// TopicDelete Executes Confluent CLI command, and with its given TopicParameters, attempts to delete a Topic in Confluent Cloud
 func (c *Client) TopicDelete(tp v1alpha1.TopicParameters) error {
 	cmd := commands.NewTopicDeleteCommand(tp)
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return errorParser(out)
@@ -81,5 +84,5 @@ func errorParser(cmdout []byte) error {
 	if strings.Contains(str, "Error: unknown topic") {
 		return errors.New(ErrUnknownTopic)
 	}
-	return errors.Wrap(errors.New(errUnknown), string(str))
+	return errors.Wrap(errors.New(errUnknown), str)
 }
