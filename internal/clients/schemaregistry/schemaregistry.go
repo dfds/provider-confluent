@@ -13,6 +13,7 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients/schemaregistry/commands"
 )
 
+// Errors for schemaregistry
 const (
 	ErrNotFound             = "schema not found"
 	errGeneral              = "unknown error:"
@@ -84,6 +85,7 @@ func (c *Client) SchemaDescribe(subject string, version string, environment stri
 	return schema, err
 }
 
+// SchemaSubjectUpdateCommand Executes Confluent CLI command to update a Schema in Confluent Cloud
 func (c *Client) SchemaSubjectUpdateCommand(subject string, compatibility string, environment string) (string, error) {
 	var cmd = commands.NewSchemaSubjectUpdateCommand(subject, compatibility, environment, c.Config.APICredentials.Key, c.Config.APICredentials.Secret)
 	cmdOutput, err := clients.ExecuteCommand(exec.Cmd(cmd))
