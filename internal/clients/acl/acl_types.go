@@ -22,7 +22,8 @@ type Client struct {
 	Config Config
 }
 
-type ACLBlock struct {
+// Block response object
+type Block struct {
 	Operation    string `json:"operation"`
 	PatternType  string `json:"pattern_type"`
 	Permission   string `json:"permission"`
@@ -31,7 +32,8 @@ type ACLBlock struct {
 	ResourceType string `json:"resource_type"`
 }
 
-func FromACLBlockToACLRule(input ACLBlock) v1alpha1.ACLRule {
+// FromACLBlockToACLRule converter from Block to ACLRule
+func FromACLBlockToACLRule(input Block) v1alpha1.ACLRule {
 	return v1alpha1.ACLRule{
 		Operation:    input.Operation,
 		PatternType:  input.PatternType,
@@ -42,8 +44,9 @@ func FromACLBlockToACLRule(input ACLBlock) v1alpha1.ACLRule {
 	}
 }
 
-func FromACLRuleToACLBlock(input v1alpha1.ACLRule) ACLBlock {
-	return ACLBlock{
+// FromACLRuleToACLBlock converter from ACLRule to Block
+func FromACLRuleToACLBlock(input v1alpha1.ACLRule) Block {
+	return Block{
 		Operation:    input.Operation,
 		PatternType:  input.PatternType,
 		Permission:   input.Permission,

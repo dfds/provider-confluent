@@ -2,7 +2,6 @@ package acl
 
 import (
 	"encoding/json"
-	"os/exec"
 
 	"github.com/dfds/provider-confluent/apis/acl/v1alpha1"
 
@@ -27,6 +26,7 @@ func NewClient(c Config) IClient {
 	return &Client{Config: c}
 }
 
+// ACLCreate create acl
 func (c *Client) ACLCreate(aclP v1alpha1.ACLParameters) ([]v1alpha1.ACLRule, error) {
 	var resp []v1alpha1.ACLRule
 
@@ -35,13 +35,13 @@ func (c *Client) ACLCreate(aclP v1alpha1.ACLParameters) ([]v1alpha1.ACLRule, err
 		return resp, err
 	}
 
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return resp, errorParser(out)
 	}
 
-	var aclBlocks []ACLBlock
+	var aclBlocks []Block
 	err = json.Unmarshal(out, &aclBlocks)
 	if err != nil {
 		return resp, err
@@ -54,13 +54,14 @@ func (c *Client) ACLCreate(aclP v1alpha1.ACLParameters) ([]v1alpha1.ACLRule, err
 	return resp, nil
 }
 
+// ACLDelete delete ACL
 func (c *Client) ACLDelete(aclP v1alpha1.ACLParameters) error {
 	cmd, err := commands.NewACLDeleteCommand(aclP)
 	if err != nil {
 		return err
 	}
 
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return errorParser(out)
@@ -69,17 +70,18 @@ func (c *Client) ACLDelete(aclP v1alpha1.ACLParameters) error {
 	return nil
 }
 
+// ACLList list ACL's
 func (c *Client) ACLList(serviceAccount string, environment string, cluster string) ([]v1alpha1.ACLRule, error) {
 	var resp []v1alpha1.ACLRule
 
 	cmd := commands.NewACLListCommand(environment, cluster, serviceAccount)
-	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
+	out, err := clients.ExecuteCommand(cmd)
 
 	if err != nil {
 		return resp, errorParser(out)
 	}
 
-	var aclBlocks []ACLBlock
+	var aclBlocks []Block
 	err = json.Unmarshal(out, &aclBlocks)
 	if err != nil {
 		return resp, err
@@ -107,5 +109,5 @@ func errorParser(cmdout []byte) error {
 	// } else if strings.Contains(str, "Error: Unknown API key") {
 	// 	return errors.New(errUnknownApiKey)
 	// }
-	return errors.Wrap(errors.New(errUnknown), string(str))
+	return errors.Wrap(errors.New(errUnknown), str)
 }

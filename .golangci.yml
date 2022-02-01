@@ -112,7 +112,7 @@ linters:
     - goconst
     - goimports
     - gofmt  # We enable this as well as goimports for its simplify mode.
-    - prealloc
+    # - prealloc
     - golint
     - unconvert
     - misspell
@@ -136,7 +136,7 @@ issues:
         - gosec
         - scopelint
         - unparam
-    
+
     # Ease some gocritic warnings on test files.
     - path: _test\.go
       text: "(unnamedResult|exitAfterDefer)"
