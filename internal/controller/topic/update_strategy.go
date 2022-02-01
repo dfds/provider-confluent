@@ -8,7 +8,8 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients/topic"
 )
 
-type TopicCompare struct {
+// Compare helper struct
+type Compare struct {
 	TopicNamesMatch  bool
 	ClusterMatch     bool
 	EnvironmentMatch bool
@@ -17,8 +18,8 @@ type TopicCompare struct {
 	ConfigMatch bool
 }
 
-func updateStrategy(tp v1alpha1.TopicParameters, td topic.DescribeResponse, to v1alpha1.TopicObservation) (TopicCompare, error) {
-	var compare TopicCompare
+func updateStrategy(tp v1alpha1.TopicParameters, td topic.DescribeResponse, to v1alpha1.TopicObservation) (Compare, error) {
+	var compare Compare
 
 	if tp.Topic.Name == td.TopicName {
 		compare.TopicNamesMatch = true
@@ -54,7 +55,8 @@ func updateStrategy(tp v1alpha1.TopicParameters, td topic.DescribeResponse, to v
 	return compare, nil
 }
 
-func (tc *TopicCompare) IsDestructive() bool {
+// IsDestructive helper method to determine destructive behaviour
+func (tc *Compare) IsDestructive() bool {
 	isDestructive := false
 	if !tc.ClusterMatch {
 		isDestructive = true
@@ -75,6 +77,7 @@ func (tc *TopicCompare) IsDestructive() bool {
 	return isDestructive
 }
 
+// DestructiveActionsAllowed helper method to deny destructive actions
 func DestructiveActionsAllowed(dp v1.DeletionPolicy) bool {
 	return dp == "Delete"
 }
