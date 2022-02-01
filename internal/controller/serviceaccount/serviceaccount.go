@@ -173,17 +173,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	// Check if resource require creation
 	create, err := ObserveCreateResource(cr, err)
 	if err != nil {
-		if err.Error() == serviceaccount.ErrNotExists {
-			return managed.ExternalObservation{
-				ResourceExists:    false,
-				ConnectionDetails: managed.ConnectionDetails{},
-			}, nil // returning nil because we want create on not found
-		} else {
-			return managed.ExternalObservation{
-				ResourceExists:    false,
-				ConnectionDetails: managed.ConnectionDetails{},
-			}, err
-		}
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, err
 	}
 
 	if cr.Status.AtProvider.ID == "" {
