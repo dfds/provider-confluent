@@ -18,7 +18,6 @@ package acl
 
 import (
 	"context"
-	"github.com/dfds/provider-confluent/internal/clients/acl/commands"
 	"reflect"
 	"strings"
 
@@ -41,6 +40,7 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients"
 	confluentClient "github.com/dfds/provider-confluent/internal/clients"
 	"github.com/dfds/provider-confluent/internal/clients/acl"
+	"github.com/dfds/provider-confluent/internal/clients/acl/commands"
 )
 
 const (
