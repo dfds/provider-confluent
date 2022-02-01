@@ -93,14 +93,17 @@ func (c *Client) ApiKeyDelete(id string) error {
 
 func errorParser(cmdout []byte) error {
 	str := string(cmdout)
-	if strings.Contains(str, "Error: environment") && strings.Contains(str, "not found") {
+
+	switch {
+	case strings.Contains(str, "Error: environment"):
 		return errors.New(errEnvironmentNotFound)
-	} else if strings.Contains(str, "Your Api Keys per User is currently limited to 10") {
+	case strings.Contains(str, "Your Api Keys per User is currently limited to 10"):
 		return errors.New(errServiceAccountNotFoundOrLimitReached)
-	} else if strings.Contains(str, "Error: Kafka cluster not found or access forbidden") {
+	case strings.Contains(str, "Error: Kafka cluster not found or access forbidden"):
 		return errors.New(errResourceNotFoundOrAccessForbidden)
-	} else if strings.Contains(str, "Error: Unknown API key") {
+	case strings.Contains(str, "Error: Unknown API key"):
 		return errors.New(errUnknownApiKey)
+	default:
+		return errors.Wrap(errors.New(errUnknown), string(str))
 	}
-	return errors.Wrap(errors.New(errUnknown), string(str))
 }

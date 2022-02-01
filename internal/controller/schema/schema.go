@@ -19,9 +19,10 @@ package schema
 import (
 	"context"
 	"encoding/json"
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"reflect"
 	"strings"
+
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -40,9 +41,7 @@ import (
 	apisv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
 
 	"github.com/dfds/provider-confluent/internal/clients"
-	confluentClient "github.com/dfds/provider-confluent/internal/clients"
 	"github.com/dfds/provider-confluent/internal/clients/schemaregistry"
-	schemaregistryClient "github.com/dfds/provider-confluent/internal/clients/schemaregistry"
 )
 
 const (
@@ -53,11 +52,6 @@ const (
 	errNewClient       = "cannot create new Service"
 	errAuthCredentials = "invalid client credentials"
 	errUnmarshalState  = "kubernetes state mismatch with type"
-	errCreateSchema    = "cannot create schema"
-)
-
-const (
-	permanent = false
 )
 
 var (
@@ -68,20 +62,20 @@ var (
 			return nil, errors.New(errAuthCredentials)
 		}
 
-		cClient := confluentClient.NewClient()
+		cClient := clients.NewClient()
 		authErr := cClient.Authenticate(credParts[0], credParts[1])
 
 		if authErr != nil {
 			return nil, authErr
 		}
 
-		srConfig := schemaregistryClient.Config{
+		srConfig := schemaregistry.Config{
 			APICredentials: apiCreds,
 			//TODO: This should be inferred from somewhere else (== not hardcoded)
 			SchemaPath: "/tmp",
 		}
 
-		return schemaregistryClient.NewClient(srConfig).(interface{}), nil
+		return schemaregistry.NewClient(srConfig).(interface{}), nil
 	}
 )
 
@@ -114,7 +108,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 type connector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(creds []byte, apiCreds confluentClient.APICredentials) (interface{}, error)
+	newServiceFn func(creds []byte, apiCreds clients.APICredentials) (interface{}, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -142,7 +136,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetCreds)
 	}
 
-	var apiCredentials confluentClient.APICredentials
+	var apiCredentials clients.APICredentials
 
 	for _, value := range pc.Spec.APICredentials {
 		if value.Identifier == v1alpha1.SchemeGroupVersion.Identifier() {
@@ -197,7 +191,10 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	var k8sschema schemaregistry.SchemaDescribeResponse
 	err = json.Unmarshal([]byte(cr.Spec.ForProvider.Schema), &k8sschema)
 	if err != nil {
-		errors.Wrap(err, errUnmarshalState)
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, errors.Wrap(err, errUnmarshalState)
 	}
 
 	// Diff

@@ -15,7 +15,6 @@ import (
 
 const (
 	ErrNotFound             = "schema not found"
-	errNotParsed            = "cannot be parsed"
 	errGeneral              = "unknown error:"
 	errInvalidResponse      = "invalid response from describe"
 	ErrNotCompatible        = "schema not compatible"

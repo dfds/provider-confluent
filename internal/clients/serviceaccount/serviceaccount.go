@@ -114,7 +114,7 @@ func (c *Client) ServiceAccountByName(name string) (ServiceAccount, error) {
 	}
 
 	for _, v := range resp {
-		if strings.ToLower(v.Name) == strings.ToLower(name) {
+		if strings.EqualFold(v.Name, name) {
 			return v, nil
 		}
 	}
