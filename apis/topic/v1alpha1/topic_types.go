@@ -9,12 +9,12 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// TopicConfig
+// Config is the config of a TopicConfig
 type Config struct {
 	Retention int64 `json:"retention"`
 }
 
-// TopicRule
+// TopicConfig is the config of a Topic
 type TopicConfig struct {
 	Name       string `json:"name"`
 	Partitions int    `json:"partitions"`
@@ -35,13 +35,13 @@ type TopicObservation struct {
 	Name        string `json:"name"`
 }
 
-// Topic Spec defines the desired state of a Topic.
+// TopicSpec defines the desired state of a Topic.
 type TopicSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
 	ForProvider       TopicParameters `json:"forProvider"`
 }
 
-// Topic Status represents the observed state of a Topic.
+// TopicStatus represents the observed state of a Topic.
 type TopicStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          TopicObservation `json:"atProvider,omitempty"`
@@ -49,7 +49,7 @@ type TopicStatus struct {
 
 // +kubebuilder:object:root=true
 
-// Schema is an example API type.
+// Topic is an example API type.
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
@@ -65,7 +65,7 @@ type Topic struct {
 
 // +kubebuilder:object:root=true
 
-// Topic List contains a list of Topic
+// TopicList contains a list of Topic
 type TopicList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
