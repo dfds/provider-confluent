@@ -190,12 +190,12 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 				ResourceExists:    false,
 				ConnectionDetails: managed.ConnectionDetails{},
 			}, nil // returning nil because we want create on not found
-		} else {
-			return managed.ExternalObservation{
-				ResourceExists:    false,
-				ConnectionDetails: managed.ConnectionDetails{},
-			}, err
 		}
+		return managed.ExternalObservation{
+			ResourceExists:    false,
+			ConnectionDetails: managed.ConnectionDetails{},
+		}, err
+
 	}
 
 	// Diff
