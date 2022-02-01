@@ -9,7 +9,7 @@ import (
 type IClient interface {
 	TopicCreate(tp v1alpha1.TopicParameters) error
 	TopicDelete(tp v1alpha1.TopicParameters) error
-	TopicDescribe(to v1alpha1.TopicObservation) (TopicDescribeResponse, error)
+	TopicDescribe(to v1alpha1.TopicObservation) (DescribeResponse, error)
 	TopicUpdate(tp v1alpha1.TopicParameters) error
 }
 
@@ -23,7 +23,8 @@ type Client struct {
 	Config Config
 }
 
-type TopicDescribeResponse struct {
+// DescribeResponse is a struct used for deserialising the response of TopicDescribe
+type DescribeResponse struct {
 	TopicName string `json:"topic_name"`
 	Config    struct {
 		CleanupPolicy                        string `json:"cleanup.policy"`

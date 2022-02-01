@@ -126,6 +126,7 @@ func (c *Client) ServiceAccountByName(name string) (ServiceAccount, error) {
 	return ServiceAccount{}, errors.New(ErrNotExists)
 }
 
+// ServiceAccountUpdate Executes Confluent CLI command to update the description of a ServiceAccount in Confluent Cloud
 func (c *Client) ServiceAccountUpdate(id string, description string) error {
 	// TODO: consider hitting the API and then handling the error
 	if isDescriptionValid(description) {
@@ -145,6 +146,7 @@ func (c *Client) ServiceAccountUpdate(id string, description string) error {
 	return nil
 }
 
+// ServiceAccountDelete Executes Confluent CLI command to delete a ServiceAccount in Confluent Cloud
 func (c *Client) ServiceAccountDelete(id string) error {
 	var cmd = commands.NewServiceAccountDeleteCommand(id)
 	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
