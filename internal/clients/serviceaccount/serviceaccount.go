@@ -29,6 +29,7 @@ func NewClient(c Config) IClient {
 	return &Client{Config: c}
 }
 
+// ServiceAccountCreate Executes Confluent CLI command to create ServiceAccount in Confluent Cloud & return a ServiceAccount object
 func (c *Client) ServiceAccountCreate(name string, description string) (ServiceAccount, error) {
 	var resp ServiceAccount
 
@@ -59,6 +60,7 @@ func (c *Client) ServiceAccountCreate(name string, description string) (ServiceA
 	return resp, nil
 }
 
+// ServiceAccountList Executes Confluent CLI command to list all ServiceAccounts in Confluent Cloud & return a slice of ServiceAccount objects
 func (c *Client) ServiceAccountList() ([]ServiceAccount, error) {
 	var cmd = commands.NewServiceAccountListCommand()
 	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
@@ -76,6 +78,7 @@ func (c *Client) ServiceAccountList() ([]ServiceAccount, error) {
 	return resp, errors.New(ErrNotExists)
 }
 
+// ServiceAccountById Executes Confluent CLI command to list all ServiceAccounts in Confluent Cloud, filter by id & return a non-empty ServiceAccount object if found
 func (c *Client) ServiceAccountById(id string) (ServiceAccount, error) {
 	var cmd = commands.NewServiceAccountListCommand()
 	out, err := clients.ExecuteCommand(exec.Cmd(cmd))
@@ -99,6 +102,7 @@ func (c *Client) ServiceAccountById(id string) (ServiceAccount, error) {
 	return ServiceAccount{}, errors.New(ErrNotExists)
 }
 
+// ServiceAccountByName Executes Confluent CLI command to list all ServiceAccounts in Confluent Cloud, filter by name & return a non-empty ServiceAccount object if found
 func (c *Client) ServiceAccountByName(name string) (ServiceAccount, error) {
 	var cmd = commands.NewServiceAccountListCommand()
 	out, err := clients.ExecuteCommand(exec.Cmd(cmd))

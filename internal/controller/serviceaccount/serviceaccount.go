@@ -190,7 +190,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		}
 	}
 
-	if cr.Status.AtProvider.Id == "" {
+	if cr.Status.AtProvider.ID == "" {
 		return managed.ExternalObservation{
 			ResourceExists:    false,
 			ResourceUpToDate:  false,
@@ -246,7 +246,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 			}
 		} else {
 			resourceNew = false
-			crCopy.Status.AtProvider.Id = resp.Id
+			crCopy.Status.AtProvider.ID = resp.Id
 
 		}
 	}
@@ -257,7 +257,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		if err != nil {
 			return managed.ExternalCreation{}, err
 		}
-		crCopy.Status.AtProvider.Id = out.Id
+		crCopy.Status.AtProvider.ID = out.Id
 	}
 
 	meta.SetExternalName(cr, crCopy.Name)
@@ -265,7 +265,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, err
 	}
 
-	cr.Status.AtProvider.Id = crCopy.Status.AtProvider.Id
+	cr.Status.AtProvider.ID = crCopy.Status.AtProvider.ID
 	if err := c.kube.Status().Update(ctx, cr); err != nil {
 		return managed.ExternalCreation{}, err
 	}
@@ -286,7 +286,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	var client = c.service.(serviceaccount.IClient)
 
 	// Update description
-	err := client.ServiceAccountUpdate(cr.Status.AtProvider.Id, cr.Spec.ForProvider.Description)
+	err := client.ServiceAccountUpdate(cr.Status.AtProvider.ID, cr.Spec.ForProvider.Description)
 	if err != nil {
 		return managed.ExternalUpdate{}, err
 	}
@@ -311,7 +311,7 @@ func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
 
 	var client = c.service.(serviceaccount.IClient)
 
-	err := client.ServiceAccountDelete(cr.Status.AtProvider.Id)
+	err := client.ServiceAccountDelete(cr.Status.AtProvider.ID)
 	if err != nil {
 		return err
 	}

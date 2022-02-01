@@ -16,7 +16,7 @@ type ServiceAccountParameters struct {
 
 // ServiceAccountObservation are the observable fields of a ServiceAccount.
 type ServiceAccountObservation struct {
-	Id string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 }
 
 // ServiceAccountSpec defines the desired state of a ServiceAccount.
