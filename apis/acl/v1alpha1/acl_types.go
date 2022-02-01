@@ -22,7 +22,7 @@ import (
 // 	Cluster        string   `json:"cluster"`
 // }
 
-// ACLRule
+// ACLRule object
 type ACLRule struct {
 	Operation    string `json:"operation"`
 	PatternType  string `json:"patternType"` // LITERAL, PREFIXED
@@ -44,13 +44,13 @@ type ACLObservation struct {
 	ACLP ACLParameters `json:"aclParameters"`
 }
 
-// ACL Spec defines the desired state of a ACL.
+// ACLSpec defines the desired state of a ACL.
 type ACLSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
 	ForProvider       ACLParameters `json:"forProvider"`
 }
 
-// ACL Status represents the observed state of a ACL.
+// ACLStatus represents the observed state of a ACL.
 type ACLStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
 	AtProvider          ACLObservation `json:"atProvider,omitempty"`
@@ -58,7 +58,7 @@ type ACLStatus struct {
 
 // +kubebuilder:object:root=true
 
-// Schema is an example API type.
+// ACL is an example API type.
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
@@ -74,7 +74,7 @@ type ACL struct {
 
 // +kubebuilder:object:root=true
 
-// ACL List contains a list of ACL
+// ACLList contains a list of ACL
 type ACLList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
