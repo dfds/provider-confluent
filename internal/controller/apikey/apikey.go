@@ -346,14 +346,13 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 			return managed.ExternalUpdate{}, err
 		}
 		return managed.ExternalUpdate{ConnectionDetails: conn}, nil
-	} else {
-		// Continue with non-destructive action
-		err = client.APIKeyUpdate(key, cr.Spec.ForProvider.Description)
-		if err != nil {
-			return managed.ExternalUpdate{}, err
-		}
-		return managed.ExternalUpdate{}, nil
 	}
+	// Continue with non-destructive action
+	err = client.APIKeyUpdate(key, cr.Spec.ForProvider.Description)
+	if err != nil {
+		return managed.ExternalUpdate{}, err
+	}
+	return managed.ExternalUpdate{}, nil
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) error {

@@ -18,19 +18,17 @@ func observeCreateResource(ak *v1alpha1.ApiKey, exists bool, err error) (bool, e
 				return false, errors.New(errCouldImportResource)
 			}
 			return true, nil
-		} else {
-			return false, err
 		}
+		return false, err
 	}
 
 	if ak.Status.AtProvider.Key == "" {
 		return true, nil
-	} else {
-		return false, nil
 	}
+	return false, nil
 }
 
-func observeUpdateResource(ak *v1alpha1.ApiKey, akm apikey.APIKeyMetadata) bool {
+func observeUpdateResource(ak *v1alpha1.ApiKey, akm apikey.Metadata) bool {
 	compare := updateStrategy(ak, akm)
 	if !compare.DescriptionMatch {
 		return true
@@ -63,14 +61,13 @@ func createResourceIsImport(err error) (bool, error) {
 	if err != nil {
 		if err.Error() == apikey.ErrNotExists {
 			return false, nil
-		} else {
-			return false, err
 		}
+		return false, err
 	}
 	return true, err
 }
 
-func updateResourceDestructive(ak *v1alpha1.ApiKey, akm apikey.APIKeyMetadata) bool {
+func updateResourceDestructive(ak *v1alpha1.ApiKey, akm apikey.Metadata) bool {
 	compare := updateStrategy(ak, akm)
 
 	return compare.isDestructive()

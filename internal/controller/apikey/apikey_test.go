@@ -42,7 +42,7 @@ func TestObserveCreateResource(t *testing.T) {
 		assert.True(create, "resource do not exists so it should create")
 	}
 
-	create, err = observeCreateResource(&ak, true, errors.New(apikey.ErrNotExists))
+	_, err = observeCreateResource(&ak, true, errors.New(apikey.ErrNotExists))
 	if err != nil {
 		assert.Equal(err.Error(), errCouldImportResource, "cannot import resource due to weird usage of external name")
 	} else {
@@ -82,7 +82,7 @@ func TestObserveUpdateResourceAndUpdateResourceDestrutive(t *testing.T) {
 	description := "my description"
 	ak := v1alpha1.ApiKey{}
 	ak.Spec.ForProvider.Description = description
-	akm := apikey.APIKeyMetadata{}
+	akm := apikey.Metadata{}
 	akm.Description = description
 	assert.False(observeUpdateResource(&ak, akm), "no update required when descriptions match")
 
@@ -95,7 +95,7 @@ func TestObserveUpdateResourceAndUpdateResourceDestrutive(t *testing.T) {
 	environment := "env-vvvvv"
 	ak = v1alpha1.ApiKey{}
 	ak.Spec.ForProvider.Environment = environment
-	akm = apikey.APIKeyMetadata{}
+	akm = apikey.Metadata{}
 	ak.Status.AtProvider.Environment = environment
 	assert.False(observeUpdateResource(&ak, akm), "no update required when environment match")
 
@@ -108,7 +108,7 @@ func TestObserveUpdateResourceAndUpdateResourceDestrutive(t *testing.T) {
 	resource := "lkc-yyyyy"
 	ak = v1alpha1.ApiKey{}
 	ak.Spec.ForProvider.Resource = resource
-	akm = apikey.APIKeyMetadata{}
+	akm = apikey.Metadata{}
 	ak.Status.AtProvider.Resource = resource
 	assert.False(observeUpdateResource(&ak, akm), "no update required when Resource match")
 
@@ -121,7 +121,7 @@ func TestObserveUpdateResourceAndUpdateResourceDestrutive(t *testing.T) {
 	sa := "sa-55555"
 	ak = v1alpha1.ApiKey{}
 	ak.Spec.ForProvider.ServiceAccount = sa
-	akm = apikey.APIKeyMetadata{}
+	akm = apikey.Metadata{}
 	ak.Status.AtProvider.ServiceAccount = sa
 	assert.False(observeUpdateResource(&ak, akm), "no update required when Resource match")
 

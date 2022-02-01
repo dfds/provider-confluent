@@ -45,9 +45,9 @@ func (c *Client) APIKeyCreate(resource string, description string, serviceAccoun
 }
 
 // GetAPIKeyByKey get API key by key
-func (c *Client) GetAPIKeyByKey(key string) (APIKeyMetadata, error) {
+func (c *Client) GetAPIKeyByKey(key string) (Metadata, error) {
 	var resp APIKeyList
-	var akm APIKeyMetadata
+	var akm Metadata
 
 	var cmd = commands.NewAPIKeyListCommand()
 	out, err := clients.ExecuteCommand(cmd)

@@ -6,15 +6,16 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients/apikey"
 )
 
-type ApiKeyCompare struct {
+// Compare comparison helper struct
+type Compare struct {
 	DescriptionMatch    bool
 	EnvironmentMatch    bool
 	ResourceMatch       bool
 	ServiceAccountMatch bool
 }
 
-func updateStrategy(ak *v1alpha1.ApiKey, akm apikey.APIKeyMetadata) ApiKeyCompare {
-	var compare ApiKeyCompare
+func updateStrategy(ak *v1alpha1.ApiKey, akm apikey.Metadata) Compare {
+	var compare Compare
 	if ak.Spec.ForProvider.Description == akm.Description {
 		compare.DescriptionMatch = true
 	}
@@ -34,7 +35,7 @@ func updateStrategy(ak *v1alpha1.ApiKey, akm apikey.APIKeyMetadata) ApiKeyCompar
 	return compare
 }
 
-func (ac *ApiKeyCompare) isDestructive() bool {
+func (ac *Compare) isDestructive() bool {
 	var destructive bool
 
 	if !ac.EnvironmentMatch {
