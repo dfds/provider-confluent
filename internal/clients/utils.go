@@ -5,7 +5,7 @@ import (
 	"os/exec"
 )
 
-// Execute command helper method
+// ExecuteCommand Execute command helper method
 func ExecuteCommand(cmd exec.Cmd) ([]byte, error) {
 	execCmd := exec.Command(cmd.Path, cmd.Args...) //nolint:gosec
 	execCmd.Env = os.Environ()
