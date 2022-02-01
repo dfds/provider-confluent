@@ -11,7 +11,7 @@ const (
 	errCouldImportResource = "given external name does match any existing keys in this environment and/or cluster"
 )
 
-func observeCreateResource(ak *v1alpha1.ApiKey, exists bool, err error) (bool, error) {
+func observeCreateResource(ak *v1alpha1.APIKey, exists bool, err error) (bool, error) {
 	if err != nil {
 		if err.Error() == apikey.ErrNotExists {
 			if exists {
@@ -28,7 +28,7 @@ func observeCreateResource(ak *v1alpha1.ApiKey, exists bool, err error) (bool, e
 	return false, nil
 }
 
-func observeUpdateResource(ak *v1alpha1.ApiKey, akm apikey.Metadata) bool {
+func observeUpdateResource(ak *v1alpha1.APIKey, akm apikey.Metadata) bool {
 	compare := updateStrategy(ak, akm)
 	if !compare.DescriptionMatch {
 		return true
@@ -49,7 +49,7 @@ func observeUpdateResource(ak *v1alpha1.ApiKey, akm apikey.Metadata) bool {
 	return false
 }
 
-func externalNameHelper(ak *v1alpha1.ApiKey) (string, bool) {
+func externalNameHelper(ak *v1alpha1.APIKey) (string, bool) {
 	extName := meta.GetExternalName(ak)
 	if extName != "" {
 		return extName, true
@@ -67,7 +67,7 @@ func createResourceIsImport(err error) (bool, error) {
 	return true, err
 }
 
-func updateResourceDestructive(ak *v1alpha1.ApiKey, akm apikey.Metadata) bool {
+func updateResourceDestructive(ak *v1alpha1.APIKey, akm apikey.Metadata) bool {
 	compare := updateStrategy(ak, akm)
 
 	return compare.isDestructive()

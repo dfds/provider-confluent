@@ -19,58 +19,58 @@ package v1alpha1
 
 import xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 
-// GetCondition of this ApiKey.
-func (mg *ApiKey) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
+// GetCondition of this APIKey.
+func (mg *APIKey) GetCondition(ct xpv1.ConditionType) xpv1.Condition {
 	return mg.Status.GetCondition(ct)
 }
 
-// GetDeletionPolicy of this ApiKey.
-func (mg *ApiKey) GetDeletionPolicy() xpv1.DeletionPolicy {
+// GetDeletionPolicy of this APIKey.
+func (mg *APIKey) GetDeletionPolicy() xpv1.DeletionPolicy {
 	return mg.Spec.DeletionPolicy
 }
 
-// GetProviderConfigReference of this ApiKey.
-func (mg *ApiKey) GetProviderConfigReference() *xpv1.Reference {
+// GetProviderConfigReference of this APIKey.
+func (mg *APIKey) GetProviderConfigReference() *xpv1.Reference {
 	return mg.Spec.ProviderConfigReference
 }
 
 /*
-GetProviderReference of this ApiKey.
+GetProviderReference of this APIKey.
 Deprecated: Use GetProviderConfigReference.
 */
-func (mg *ApiKey) GetProviderReference() *xpv1.Reference {
+func (mg *APIKey) GetProviderReference() *xpv1.Reference {
 	return mg.Spec.ProviderReference
 }
 
-// GetWriteConnectionSecretToReference of this ApiKey.
-func (mg *ApiKey) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
+// GetWriteConnectionSecretToReference of this APIKey.
+func (mg *APIKey) GetWriteConnectionSecretToReference() *xpv1.SecretReference {
 	return mg.Spec.WriteConnectionSecretToReference
 }
 
-// SetConditions of this ApiKey.
-func (mg *ApiKey) SetConditions(c ...xpv1.Condition) {
+// SetConditions of this APIKey.
+func (mg *APIKey) SetConditions(c ...xpv1.Condition) {
 	mg.Status.SetConditions(c...)
 }
 
-// SetDeletionPolicy of this ApiKey.
-func (mg *ApiKey) SetDeletionPolicy(r xpv1.DeletionPolicy) {
+// SetDeletionPolicy of this APIKey.
+func (mg *APIKey) SetDeletionPolicy(r xpv1.DeletionPolicy) {
 	mg.Spec.DeletionPolicy = r
 }
 
-// SetProviderConfigReference of this ApiKey.
-func (mg *ApiKey) SetProviderConfigReference(r *xpv1.Reference) {
+// SetProviderConfigReference of this APIKey.
+func (mg *APIKey) SetProviderConfigReference(r *xpv1.Reference) {
 	mg.Spec.ProviderConfigReference = r
 }
 
 /*
-SetProviderReference of this ApiKey.
+SetProviderReference of this APIKey.
 Deprecated: Use SetProviderConfigReference.
 */
-func (mg *ApiKey) SetProviderReference(r *xpv1.Reference) {
+func (mg *APIKey) SetProviderReference(r *xpv1.Reference) {
 	mg.Spec.ProviderReference = r
 }
 
-// SetWriteConnectionSecretToReference of this ApiKey.
-func (mg *ApiKey) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
+// SetWriteConnectionSecretToReference of this APIKey.
+func (mg *APIKey) SetWriteConnectionSecretToReference(r *xpv1.SecretReference) {
 	mg.Spec.WriteConnectionSecretToReference = r
 }

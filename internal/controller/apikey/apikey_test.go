@@ -14,7 +14,7 @@ func TestExternalNameHelper(t *testing.T) {
 	assert := assert.New(t)
 
 	// No external name
-	ak := v1alpha1.ApiKey{}
+	ak := v1alpha1.APIKey{}
 	ak.Status.AtProvider.Key = "name"
 	name, exists := externalNameHelper(&ak)
 	assert.Equal(ak.Status.AtProvider.Key, name)
@@ -34,7 +34,7 @@ func TestObserveCreateResource(t *testing.T) {
 	assert := assert.New(t)
 
 	// Resource do not exists
-	ak := v1alpha1.ApiKey{}
+	ak := v1alpha1.APIKey{}
 	create, err := observeCreateResource(&ak, false, errors.New(apikey.ErrNotExists))
 	if err != nil {
 		t.Errorf("no error expected when ErrorNotExists is passed to function")
@@ -80,7 +80,7 @@ func TestObserveUpdateResourceAndUpdateResourceDestrutive(t *testing.T) {
 
 	// Descriptions match
 	description := "my description"
-	ak := v1alpha1.ApiKey{}
+	ak := v1alpha1.APIKey{}
 	ak.Spec.ForProvider.Description = description
 	akm := apikey.Metadata{}
 	akm.Description = description
@@ -93,7 +93,7 @@ func TestObserveUpdateResourceAndUpdateResourceDestrutive(t *testing.T) {
 
 	// Environment match
 	environment := "env-vvvvv"
-	ak = v1alpha1.ApiKey{}
+	ak = v1alpha1.APIKey{}
 	ak.Spec.ForProvider.Environment = environment
 	akm = apikey.Metadata{}
 	ak.Status.AtProvider.Environment = environment
@@ -106,7 +106,7 @@ func TestObserveUpdateResourceAndUpdateResourceDestrutive(t *testing.T) {
 
 	// Resource match
 	resource := "lkc-yyyyy"
-	ak = v1alpha1.ApiKey{}
+	ak = v1alpha1.APIKey{}
 	ak.Spec.ForProvider.Resource = resource
 	akm = apikey.Metadata{}
 	ak.Status.AtProvider.Resource = resource
@@ -119,7 +119,7 @@ func TestObserveUpdateResourceAndUpdateResourceDestrutive(t *testing.T) {
 
 	// Service account match
 	sa := "sa-55555"
-	ak = v1alpha1.ApiKey{}
+	ak = v1alpha1.APIKey{}
 	ak.Spec.ForProvider.ServiceAccount = sa
 	akm = apikey.Metadata{}
 	ak.Status.AtProvider.ServiceAccount = sa

@@ -44,7 +44,7 @@ import (
 )
 
 const (
-	errNotMyType                                     = "managed resource is not a ApiKey custom resource"
+	errNotMyType                                     = "managed resource is not a APIKey custom resource"
 	errTrackPCUsage                                  = "cannot track ProviderConfig usage"
 	errGetPC                                         = "cannot get ProviderConfig"
 	errGetCreds                                      = "cannot get credentials"

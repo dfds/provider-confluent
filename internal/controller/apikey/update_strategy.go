@@ -14,7 +14,7 @@ type Compare struct {
 	ServiceAccountMatch bool
 }
 
-func updateStrategy(ak *v1alpha1.ApiKey, akm apikey.Metadata) Compare {
+func updateStrategy(ak *v1alpha1.APIKey, akm apikey.Metadata) Compare {
 	var compare Compare
 	if ak.Spec.ForProvider.Description == akm.Description {
 		compare.DescriptionMatch = true

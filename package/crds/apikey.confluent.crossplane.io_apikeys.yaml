@@ -14,8 +14,8 @@ spec:
     - crossplane
     - managed
     - confluent
-    kind: ApiKey
-    listKind: ApiKeyList
+    kind: APIKey
+    listKind: APIKeyList
     plural: apikeys
     singular: apikey
   scope: Cluster
@@ -36,7 +36,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Schema is an example API type.
+        description: APIKey is an example API type.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -51,7 +51,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ApiKey Spec defines the desired state of a ApiKey.
+            description: APIKeySpec defines the desired state of a APIKey.
             properties:
               deletionPolicy:
                 default: Delete
@@ -63,7 +63,7 @@ spec:
                 - Delete
                 type: string
               forProvider:
-                description: ApiKeyParameters are the configurable fields of a ApiKey.
+                description: APIKeyParameters are the configurable fields of a APIKey.
                 properties:
                   description:
                     type: string
@@ -124,10 +124,10 @@ spec:
             - forProvider
             type: object
           status:
-            description: ApiKey Status represents the observed state of a ApiKey.
+            description: APIKeyStatus Status represents the observed state of a APIKey.
             properties:
               atProvider:
-                description: ApiKeyObservation are the observable fields of a ApiKey.
+                description: APIKeyObservation are the observable fields of a APIKey.
                 properties:
                   environment:
                     type: string

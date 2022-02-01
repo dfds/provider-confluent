@@ -9,67 +9,67 @@ import (
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 )
 
-// ApiKeyParameters are the configurable fields of a ApiKey.
-type ApiKeyParameters struct {
+// APIKeyParameters are the configurable fields of a APIKey.
+type APIKeyParameters struct {
 	Resource       string `json:"resource"`
 	ServiceAccount string `json:"serviceAccount"`
 	Environment    string `json:"environment"`
 	Description    string `json:"description"`
 }
 
-// ApiKeyObservation are the observable fields of a ApiKey.
-type ApiKeyObservation struct {
+// APIKeyObservation are the observable fields of a APIKey.
+type APIKeyObservation struct {
 	Key            string `json:"key"`
 	Resource       string `json:"resource"`
 	ServiceAccount string `json:"serviceAccount"`
 	Environment    string `json:"environment"`
 }
 
-// ApiKey Spec defines the desired state of a ApiKey.
-type ApiKeySpec struct {
+// APIKeySpec defines the desired state of a APIKey.
+type APIKeySpec struct {
 	xpv1.ResourceSpec `json:",inline"`
-	ForProvider       ApiKeyParameters `json:"forProvider"`
+	ForProvider       APIKeyParameters `json:"forProvider"`
 }
 
-// ApiKey Status represents the observed state of a ApiKey.
-type ApiKeyStatus struct {
+// APIKeyStatus Status represents the observed state of a APIKey.
+type APIKeyStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	AtProvider          ApiKeyObservation `json:"atProvider,omitempty"`
+	AtProvider          APIKeyObservation `json:"atProvider,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// Schema is an example API type.
+// APIKey is an example API type.
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,managed,confluent}
-type ApiKey struct {
+type APIKey struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              ApiKeySpec   `json:"spec"`
-	Status            ApiKeyStatus `json:"status,omitempty"`
+	Spec              APIKeySpec   `json:"spec"`
+	Status            APIKeyStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// ApiKey List contains a list of ApiKey
-type ApiKeyList struct {
+// APIKeyList contains a list of APIKey
+type APIKeyList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []ApiKey `json:"items"`
+	Items           []APIKey `json:"items"`
 }
 
-// ApiKey type metadata.
+// APIKey type metadata.
 var (
-	ApiKeyKind             = reflect.TypeOf(ApiKey{}).Name()
-	ApiKeyGroupKind        = schema.GroupKind{Group: Group, Kind: ApiKeyKind}.String()
-	ApiKeyKindAPIVersion   = ApiKeyKind + "." + SchemeGroupVersion.String()
-	ApiKeyGroupVersionKind = SchemeGroupVersion.WithKind(ApiKeyKind)
+	APIKeyKind             = reflect.TypeOf(APIKey{}).Name()
+	APIKeyGroupKind        = schema.GroupKind{Group: Group, Kind: APIKeyKind}.String()
+	APIKeyKindAPIVersion   = APIKeyKind + "." + SchemeGroupVersion.String()
+	APIKeyGroupVersionKind = SchemeGroupVersion.WithKind(APIKeyKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&ApiKey{}, &ApiKeyList{})
+	SchemeBuilder.Register(&APIKey{}, &APIKeyList{})
 }
