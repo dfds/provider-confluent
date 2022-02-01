@@ -23,6 +23,7 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/crossplane/crossplane-runtime/pkg/ratelimiter"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -171,14 +172,14 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	}
 
 	// Support for importing resource using exernal name
-	key, _ := externalNameHelper(cr)
+	key, exists := externalNameHelper(cr)
 
 	// Confluent cloud
 	var client = c.service.(apikey.IClient)
 	observe, err := client.GetAPIKeyByKey(key)
 
 	// Check if resource require creation
-	create, err := observeCreateResource(err)
+	create, err := observeCreateResource(cr, exists, err)
 	if err != nil {
 		return managed.ExternalObservation{
 			ResourceExists:    false,
@@ -247,15 +248,13 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	if exists {
 		observe, err := client.GetAPIKeyByKey(key)
-		fmt.Println("Fuck this error:", err.Error())
 		createIsImport, err = createResourceIsImport(err)
 		if err != nil {
 			return managed.ExternalCreation{}, err
 		}
-		fmt.Println("Is create an import:", createIsImport)
 		if createIsImport {
 			cr.Status.AtProvider.Key = observe.Key
-			cr.Status.AtProvider.Environment = observe.Key
+			cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
 			cr.Status.AtProvider.Resource = cr.Spec.ForProvider.Resource
 			cr.Status.AtProvider.ServiceAccount = cr.Spec.ForProvider.ServiceAccount
 			conn = managed.ConnectionDetails{xpv1.ResourceCredentialsSecretUserKey: []byte(observe.Key),
@@ -269,6 +268,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		if err != nil {
 			return managed.ExternalCreation{}, err
 		}
+		meta.SetExternalName(cr, out.Key)
 		cr.Status.AtProvider.Key = out.Key
 		cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
 		cr.Status.AtProvider.Resource = cr.Spec.ForProvider.Resource

@@ -4,9 +4,9 @@ kind: ApiKey
 metadata:
   name: crossplane-test
   # annotations:
-  #   crossplane.io/external-name: 6IM7JX2YTBB5VMGJ
+  #   crossplane.io/external-name: XXXXXXXXXXXXXXXXXXX
 spec:
-  # deletionPolicy: Orphan
+  # deletionPolicy: Delete
   forProvider:
     description: "crossplane-test0"
     resource: ${CONFLUENT_CLUSTER_ID}

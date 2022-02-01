@@ -4,18 +4,30 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/dfds/provider-confluent/apis/apikey/v1alpha1"
 	"github.com/dfds/provider-confluent/internal/clients/apikey"
+	"github.com/pkg/errors"
 )
 
-func observeCreateResource(err error) (bool, error) {
+const (
+	errCouldImportResource = "given external name does match any existing keys in this environment and/or cluster"
+)
+
+func observeCreateResource(ak *v1alpha1.ApiKey, exists bool, err error) (bool, error) {
 	if err != nil {
 		if err.Error() == apikey.ErrNotExists {
+			if exists {
+				return false, errors.New(errCouldImportResource)
+			}
 			return true, nil
 		} else {
 			return false, err
 		}
 	}
 
-	return false, nil
+	if ak.Status.AtProvider.Key == "" {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
 
 func observeUpdateResource(ak *v1alpha1.ApiKey, akm apikey.ApiKeyMetadata) bool {
