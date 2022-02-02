@@ -12,3 +12,4 @@ cover.out
 .env
 profile.out
 main
+.secrets

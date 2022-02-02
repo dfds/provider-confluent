@@ -1,0 +1,51 @@
+name: Provider confluent CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  BUILD_REGISTRY: dfds
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.17'
+      - name: lint
+        run: make lint
+      - name: prereqs for test
+        run: go mod vendor
+      - name: install confluent cli
+        run: curl -sL --http1.1 https://cnfl.io/cli | sh -s -- latest
+      # - name: test
+      #   run: ./scripts/test.sh
+      - name: build
+        run: make build
+
+  cd:
+    needs: [ci]
+    name: CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: docker login
+        env:
+          DOCKER_USER: ${{secrets.DOCKER_USER}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: docker tag controller
+        run: docker tag $BUILD_REGISTRY/provider-confluent-controller-amd64:latest ${{secrets.DOCKER_USER}}/provider-confluent-controller:latest
+      - name: docker push controller
+        run: docker push ${{secrets.DOCKER_USER}}/provider-confluent-controller-amd64:latest
+      - name: docker tag controller
+        run: docker tag $BUILD_REGISTRY/provider-confluent-amd64:latest ${{secrets.DOCKER_USER}}/provider-confluent:latest
+      - name: docker push package
+        run: docker push ${{secrets.DOCKER_USER}}/provider-confluent-amd64:latest
