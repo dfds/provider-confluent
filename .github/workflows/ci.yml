@@ -13,7 +13,7 @@ env:
 
 jobs:
   ci:
-    name: CI
+    name: CI/CD
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -32,17 +32,8 @@ jobs:
       #   run: ./scripts/test.sh
       - name: build
         run: make build
-
-  cd:
-    needs: [ci]
-    name: CD
-    runs-on: ubuntu-latest
-    steps:
       - name: docker login
-        env:
-          DOCKERHUB_USERNAME : ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN}}
-        run: docker login -u $DOCKERHUB_USERNAME  -p $DOCKERHUB_TOKEN
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN}}
       - name: docker tag controller
         run: docker tag $BUILD_REGISTRY/provider-confluent-controller-amd64:latest ${{ secrets.DOCKERHUB_USERNAME }}/provider-confluent-controller:latest
       - name: docker push controller
