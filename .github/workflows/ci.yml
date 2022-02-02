@@ -37,8 +37,8 @@ jobs:
       - name: docker tag controller
         run: docker tag ${{ env.BUILD_REGISTRY }}/provider-confluent-controller-amd64:latest ${{ secrets.DOCKERHUB_USERNAME }}/provider-confluent-controller:latest
       - name: docker push controller
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/provider-confluent-controller-amd64:latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/provider-confluent-controller:latest
       - name: docker tag controller
         run: docker tag ${{ env.BUILD_REGISTRY }}/provider-confluent-amd64:latest ${{ secrets.DOCKERHUB_USERNAME }}/provider-confluent:latest
       - name: docker push package
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/provider-confluent-amd64:latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/provider-confluent:latest
