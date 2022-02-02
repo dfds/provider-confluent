@@ -38,14 +38,14 @@ jobs:
     steps:
       - name: docker login
         env:
-          DOCKER_USER: ${{secrets.DOCKER_USER}}
-          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-        run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+          DOCKERHUB_USERNAME : ${{secrets. DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{secrets.DOCKERHUB_TOKEN}}
+        run: docker login -u $ DOCKERHUB_USERNAME  -p $DOCKERHUB_TOKEN
       - name: docker tag controller
-        run: docker tag $BUILD_REGISTRY/provider-confluent-controller-amd64:latest ${{secrets.DOCKER_USER}}/provider-confluent-controller:latest
+        run: docker tag $BUILD_REGISTRY/provider-confluent-controller-amd64:latest ${{secrets. DOCKERHUB_USERNAME }}/provider-confluent-controller:latest
       - name: docker push controller
-        run: docker push ${{secrets.DOCKER_USER}}/provider-confluent-controller-amd64:latest
+        run: docker push ${{secrets. DOCKERHUB_USERNAME }}/provider-confluent-controller-amd64:latest
       - name: docker tag controller
-        run: docker tag $BUILD_REGISTRY/provider-confluent-amd64:latest ${{secrets.DOCKER_USER}}/provider-confluent:latest
+        run: docker tag $BUILD_REGISTRY/provider-confluent-amd64:latest ${{secrets. DOCKERHUB_USERNAME }}/provider-confluent:latest
       - name: docker push package
-        run: docker push ${{secrets.DOCKER_USER}}/provider-confluent-amd64:latest
+        run: docker push ${{secrets. DOCKERHUB_USERNAME }}/provider-confluent-amd64:latest
