@@ -20,10 +20,10 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.17'
+      - name: prereqs
+        run: go mod vendor
       - name: lint
         run: make lint
-      - name: prereqs for test
-        run: go mod vendor
       - name: install confluent cli
         run: curl -sL --http1.1 https://cnfl.io/cli | sh -s -- latest
       # - name: test
