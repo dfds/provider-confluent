@@ -1,6 +1,7 @@
 package acl
 
 import (
+	"strings"
 	"encoding/json"
 
 	"github.com/dfds/provider-confluent/apis/acl/v1alpha1"
@@ -101,14 +102,11 @@ func (c *Client) ACLList(serviceAccount string, environment string, cluster stri
 //TODO: Improve error parsing, e.g. don't always returning errUnknown.
 func errorParser(cmdout []byte) error {
 	str := string(cmdout)
-	// if strings.Contains(str, "Error: environment") && strings.Contains(str, "not found") {
-	// 	return errors.New(errEnvironmentNotFound)
-	// } else if strings.Contains(str, "Your Api Keys per User is currently limited to 10") {
-	// 	return errors.New(errServiceAccountNotFoundOrLimitReached)
-	// } else if strings.Contains(str, "Error: Kafka cluster not found or access forbidden") {
-	// 	return errors.New(errResourceNotFoundOrAccessForbidden)
-	// } else if strings.Contains(str, "Error: Unknown API key") {
-	// 	return errors.New(errUnknownApiKey)
-	// }
-	return errors.Wrap(errors.New(errUnknown), str)
+
+	switch {
+	case strings.Contains(str, "Error: service account") && strings.Contains(str, "not found"):
+		return errors.New(ErrACLNotExistsOrInvalidServiceAccount)
+	default:
+		return errors.Wrap(errors.New(errUnknown), str)
+	}
 }

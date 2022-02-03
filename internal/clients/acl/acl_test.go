@@ -43,7 +43,7 @@ func TestAclLifecycle(t *testing.T) {
 
 	_, err := client.ACLList("sa-00000", environment, resource)
 	if err != nil {
-		assert.Equal(err.Error(), ErrACLNotExistsOrInvalidServiceAccount, "empty acl should should return not exists")
+		assert.Equal(ErrACLNotExistsOrInvalidServiceAccount, err.Error(), "empty acl should should return not exists")
 	}
 
 	_, err = client.ACLCreate(aclParam)
