@@ -38,10 +38,12 @@ jobs:
       - name: test
         run: ./scripts/test.sh
         env:
-          CONFLUENT_PROVIDER_CREDENTIALS: ${{ secrets.CONFLUENT_CLOUD_EMAIL }}:${{ secrets.CONFLUENT_CLOUD_PASSWORD}}
+          CONFLUENT_PROVIDER_CREDENTIALS: "${{ secrets.CONFLUENT_CLOUD_EMAIL }}:${{ secrets.CONFLUENT_CLOUD_PASSWORD}}"
           CONFLUENT_CLUSTER_ID: ${{ secrets.CONFLUENT_CLUSTER_ID }}
           CONFLUENT_ENVIRONMENT: ${{ secrets.CONFLUENT_ENVIRONMENT }}
           CONFLUENT_SERVICEACCOUNT: ${{ secrets.CONFLUENT_SERVICEACCOUNT }}
+          CONFLUENT_PROVIDER_API_KEY: ${{ secrets.CONFLUENT_PROVIDER_API_KEY }}
+          CONFLUENT_PROVIDER_API_SECRET: ${{ secrets.CONFLUENT_PROVIDER_API_SECRET }}
       - name: confluent logout
         run: confluent logout
         if: always()
