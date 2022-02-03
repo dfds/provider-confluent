@@ -28,8 +28,13 @@ jobs:
         run: go mod vendor
       - name: install confluent cli
         run: curl -sL --http1.1 https://cnfl.io/cli | sh -s -- latest
-      # - name: test
-      #   run: ./scripts/test.sh
+      - name: confluent login
+        run: confluent login --save
+      - name: test
+        run: ./scripts/test.sh
+      - name: confluent logout
+        run: confluent logout
+        if: always()
       - name: build
         run: make build
       - name: docker login

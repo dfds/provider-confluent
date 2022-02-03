@@ -24,10 +24,10 @@ const testSchema = `
 var testConfig = Config{
 	APICredentials: clients.APICredentials{
 		Identifier: "FOO",
-		Key:        config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_KEY", ""),
-		Secret:     config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_REGISTRY_API_SECRET", ""),
+		Key:        config.GetEnvValue("CONFLUENT_PROVIDER_API_KEY", ""),
+		Secret:     config.GetEnvValue("CONFLUENT_PROVIDER_API_SECRET", ""),
 	},
-	SchemaPath: config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_FILE_LOCATION", "C:\\misc\\tmp"),
+	SchemaPath: config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_FILE_LOCATION", "/tmp"),
 }
 
 func TestSchemaDescribeCommand(t *testing.T) {
