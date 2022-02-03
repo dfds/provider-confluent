@@ -8,6 +8,7 @@ cover.out
 .DS_Store
 # ignore IDE folders
 #.vscode/
+.vscode/*.log
 .idea/
 .env
 profile.out
