@@ -27,7 +27,9 @@ jobs:
       - name: prereqs for test
         run: go mod vendor
       - name: install confluent cli
-        run: curl -sL --http1.1 https://cnfl.io/cli | sh -s -- -b /usr/local/bin latest
+        run: curl -sL --http1.1 https://cnfl.io/cli | sh -s -- -b $HOME/.local/bin latest
+      - name: add confluent cli to path
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: confluent login
         run: confluent login --save
       - name: test
