@@ -14,5 +14,5 @@ RUN mkdir /.confluent && chown 1001:1001 /.confluent
 WORKDIR /home/appuser
 
 EXPOSE 8080
-USER 1001
+USER appuser
 ENTRYPOINT ["crossplane-confluent-provider"]
