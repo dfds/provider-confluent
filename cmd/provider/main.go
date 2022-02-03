@@ -40,6 +40,9 @@ func main() {
 	)
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
+	alwaysDebug := true
+	debug = &alwaysDebug
+
 	zl := zap.New(zap.UseDevMode(*debug))
 	log := logging.NewLogrLogger(zl.WithName("provider-confluent"))
 	if *debug {
