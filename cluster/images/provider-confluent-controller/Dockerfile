@@ -1,7 +1,7 @@
 FROM BASEIMAGE
 RUN apk --no-cache add ca-certificates bash curl
 
-RUN curl -sL --http1.1 https://cnfl.io/cli | sh -s -- -b /usr/local/bin latest
+RUN curl -sL --http1.1 https://cnfl.io/cli | sh -s -- -b /usr/local/bin v2.4.0
 
 ARG ARCH
 ARG TINI_VERSION
