@@ -8,6 +8,10 @@ ARG TINI_VERSION
 
 ADD provider /usr/local/bin/crossplane-confluent-provider
 
+RUN adduser -D -u 1001 -h /home/appuser appuser
+
+WORKDIR /home/appuser
+
 EXPOSE 8080
 USER 1001
 ENTRYPOINT ["crossplane-confluent-provider"]
