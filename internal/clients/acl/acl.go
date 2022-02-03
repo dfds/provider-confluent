@@ -1,8 +1,8 @@
 package acl
 
 import (
-	"strings"
 	"encoding/json"
+	"strings"
 
 	"github.com/dfds/provider-confluent/apis/acl/v1alpha1"
 
