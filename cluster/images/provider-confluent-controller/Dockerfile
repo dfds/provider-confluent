@@ -8,8 +8,8 @@ ARG TINI_VERSION
 
 ADD provider /usr/local/bin/crossplane-confluent-provider
 
-RUN adduser -D -u 1001 -h /home/appuser appuser
-RUN mkdir /.confluent && chown 1001:1001 /.confluent
+RUN adduser -D -u 2000 -h /home/appuser appuser
+RUN mkdir /.confluent && chown appuser:appuser /.confluent
 
 WORKDIR /home/appuser
 
