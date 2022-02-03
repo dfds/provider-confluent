@@ -32,8 +32,16 @@ jobs:
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: confluent login
         run: confluent login --save
+        env:
+          CONFLUENT_CLOUD_EMAIL: ${{ secrets.CONFLUENT_CLOUD_EMAIL }}
+          CONFLUENT_CLOUD_PASSWORD: ${{ secrets.CONFLUENT_CLOUD_PASSWORD}}
       - name: test
         run: ./scripts/test.sh
+        env:
+          CONFLUENT_PROVIDER_CREDENTIALS: ${{ secrets.CONFLUENT_CLOUD_EMAIL }}:${{ secrets.CONFLUENT_CLOUD_PASSWORD}}
+          CONFLUENT_CLUSTER_ID: ${{ secrets.CONFLUENT_CLUSTER_ID }}
+          CONFLUENT_ENVIRONMENT: ${{ secrets.CONFLUENT_ENVIRONMENT }}
+          CONFLUENT_SERVICEACCOUNT: ${{ secrets.CONFLUENT_SERVICEACCOUNT }}
       - name: confluent logout
         run: confluent logout
         if: always()
