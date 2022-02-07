@@ -1,0 +1,44 @@
+name: Provider confluent CI release
+
+on:
+  push:
+    tags:
+      - v0.*   
+
+env:
+  BUILD_REGISTRY: dfdsdk
+
+jobs:
+  ci:
+    name: CI for release
+    if: github.event.review.state == 'approved'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.17'
+      - name: prereqs for make
+        run: make submodules
+      - name: prereqs for test
+        run: go mod vendor
+      - name: build
+        run: make build
+      - name: docker login
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN}}
+      - name: docker tag controller latest
+        run: docker tag ${{ env.BUILD_REGISTRY }}/provider-confluent-controller-amd64:latest ${{ env.BUILD_REGISTRY }}/provider-confluent-controller:latest
+      - name: docker tag controller version
+        run: docker tag ${{ env.BUILD_REGISTRY }}/provider-confluent-controller-amd64:latest ${{ env.BUILD_REGISTRY }}/provider-confluent-controller:${{ env.github.ref_name }}        
+      - name: docker push controller latest
+        run: docker push ${{ env.BUILD_REGISTRY }}/provider-confluent-controller:latest
+      - name: docker push controller version
+        run: docker push ${{ env.BUILD_REGISTRY }}/provider-confluent-controller:${{ env.github.ref_name }}        
+      - name: docker tag package latest
+        run: docker tag ${{ env.BUILD_REGISTRY }}/provider-confluent-amd64:latest ${{ env.BUILD_REGISTRY }}/provider-confluent:latest
+      - name: docker tag package version
+        run: docker tag ${{ env.BUILD_REGISTRY }}/provider-confluent-amd64:latest ${{ env.BUILD_REGISTRY }}/provider-confluent:${{ env.github.ref_name }} 
+      - name: docker push package latest
+        run: docker push ${{ env.BUILD_REGISTRY }}/provider-confluent:latest
+      - name: docker push package version
+        run: docker push ${{ env.BUILD_REGISTRY }}/provider-confluent:${{ env.github.ref_name }}

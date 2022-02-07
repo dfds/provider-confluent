@@ -1,16 +1,18 @@
 name: Provider confluent CI
 
 on:
-  push:
+  pull_request_review:
     branches:
-      - main
+      - main   
+    types: [submitted]      
 
 env:
   BUILD_REGISTRY: dfdsdk
 
 jobs:
   ci:
-    name: CI/CD
+    name: CI for approved PR
+    if: github.event.review.state == 'approved'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -19,8 +21,6 @@ jobs:
           go-version: '^1.17'
       - name: prereqs for make
         run: make submodules
-      - name: lint
-        run: make lint
       - name: prereqs for test
         run: go mod vendor
       - name: install confluent cli
@@ -46,13 +46,3 @@ jobs:
         if: always()
       - name: build
         run: make build
-      - name: docker login
-        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN}}
-      - name: docker tag controller
-        run: docker tag ${{ env.BUILD_REGISTRY }}/provider-confluent-controller-amd64:latest ${{ env.BUILD_REGISTRY }}/provider-confluent-controller:latest
-      - name: docker push controller
-        run: docker push ${{ env.BUILD_REGISTRY }}/provider-confluent-controller:latest
-      - name: docker tag package
-        run: docker tag ${{ env.BUILD_REGISTRY }}/provider-confluent-amd64:latest ${{ env.BUILD_REGISTRY }}/provider-confluent:latest
-      - name: docker push package
-        run: docker push ${{ env.BUILD_REGISTRY }}/provider-confluent:latest
