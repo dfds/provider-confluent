@@ -17,6 +17,7 @@ var (
 )
 
 func TestServiceAccountLifecycle(t *testing.T) {
+	clients.SkipCI(t)
 	assert := assert.New(t)
 
 	_, err := client.ServiceAccountByName("")

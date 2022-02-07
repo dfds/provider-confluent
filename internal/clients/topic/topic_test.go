@@ -24,6 +24,7 @@ var (
 )
 
 func TestTopicLifecycle(t *testing.T) {
+	clients.SkipCI(t)
 	assert := assert.New(t)
 
 	_, err := client.TopicDescribe(v1alpha1.TopicObservation{Cluster: cluster, Environment: environment, Name: name})

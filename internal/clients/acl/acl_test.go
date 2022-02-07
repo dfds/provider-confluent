@@ -39,6 +39,7 @@ var (
 
 // Asses and assert
 func TestAclLifecycle(t *testing.T) {
+	clients.SkipCI(t)
 	assert := assert.New(t)
 
 	_, err := client.ACLList("sa-00000", environment, resource)

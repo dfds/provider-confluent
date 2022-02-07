@@ -8,6 +8,7 @@ import (
 )
 
 func TestClientAuthenticate(t *testing.T) {
+	SkipCI(t)
 	client := NewClient()
 	err := client.Authenticate(config.GetEnvValue(ConflientUsernameEnvKey, ""), config.GetEnvValue(ConfluentPasswordEnvKey, ""))
 	if err != nil {

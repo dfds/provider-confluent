@@ -25,6 +25,7 @@ var (
 
 // Asses and assert
 func TestAPIKeyLifecycle(t *testing.T) {
+	clients.SkipCI(t)
 	assert := assert.New(t)
 
 	_, err := client.GetAPIKeyByKey("")

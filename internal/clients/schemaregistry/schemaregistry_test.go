@@ -111,6 +111,7 @@ func TestSchemaCreateCommand(t *testing.T) {
 }
 
 func TestClientSchemaCreate(t *testing.T) {
+	clients.SkipCI(t)
 	client := NewClient(testConfig)
 
 	resp, err := client.SchemaCreate("provider-confluent-testclientcreate", testSchema, "AVRO", "env-zvzz7")
@@ -131,6 +132,7 @@ func TestClientSchemaCreate(t *testing.T) {
 }
 
 func TestClientSchemaDelete(t *testing.T) {
+	clients.SkipCI(t)
 	client := NewClient(testConfig)
 
 	respCreate, err := client.SchemaCreate("provider-confluent-testclientdelete", testSchema, "AVRO", "env-zvzz7")
@@ -149,6 +151,7 @@ func TestClientSchemaDelete(t *testing.T) {
 }
 
 func TestClientSchemaDescribe(t *testing.T) {
+	clients.SkipCI(t)
 	client := NewClient(testConfig)
 
 	respCreate, err := client.SchemaCreate("provider-confluent-testclientdescribe", testSchema, "AVRO", "env-zvzz7")
