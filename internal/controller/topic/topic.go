@@ -318,11 +318,11 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	fmt.Println("UPDATE DESCTRUCTIVE:", requireUpdate.IsDestructive())
 	if requireUpdate.IsDestructive() {
 		return managed.ExternalUpdate{}, errors.New(errDestructiveUpdateNotAllowed)
-	} else {
-		err := client.TopicUpdate(cr.Spec.ForProvider)
-		if err != nil {
-			return managed.ExternalUpdate{}, err
-		}
+	}
+
+	err = client.TopicUpdate(cr.Spec.ForProvider)
+	if err != nil {
+		return managed.ExternalUpdate{}, err
 	}
 
 	return managed.ExternalUpdate{
