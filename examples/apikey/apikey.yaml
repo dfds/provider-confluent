@@ -1,6 +1,6 @@
 ---
 apiVersion: apikey.confluent.crossplane.io/v1alpha1
-kind: ApiKey
+kind: APIKey
 metadata:
   name: crossplane-test
   # annotations:
