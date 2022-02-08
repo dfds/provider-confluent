@@ -38,6 +38,7 @@ func main() {
 		syncPeriod     = app.Flag("sync", "Controller manager sync period such as 300ms, 1.5h, or 2h45m").Short('s').Default("1h").Duration()
 		leaderElection = app.Flag("leader-election", "Use leader election for the controller manager.").Short('l').Default("false").OverrideDefaultFromEnvar("LEADER_ELECTION").Bool()
 	)
+	app.Flag("debug", "Run with debug logging.").Short('d').Bool()
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	alwaysDebug := true

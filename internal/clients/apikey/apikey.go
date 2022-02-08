@@ -17,7 +17,7 @@ const (
 	errServiceAccountNotFoundOrLimitReached = "service not found or limit reached"
 	errResourceNotFoundOrAccessForbidden    = "resource not found or access forbidden"
 	ErrNotExists                            = "api key does not exists"
-	errUnknownAPIKey                        = "unknow apikey"
+	errUnknownAPIKey                        = "unknown apikey"
 )
 
 // NewClient is a factory method for apikey client

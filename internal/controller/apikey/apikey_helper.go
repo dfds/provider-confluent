@@ -4,7 +4,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
 	"github.com/dfds/provider-confluent/apis/apikey/v1alpha1"
 	"github.com/dfds/provider-confluent/internal/clients/apikey"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -15,7 +14,7 @@ func observeCreateResource(ak *v1alpha1.APIKey, exists bool, err error) (bool, e
 	if err != nil {
 		if err.Error() == apikey.ErrNotExists {
 			if exists {
-				return false, errors.New(errCouldImportResource)
+				return true, nil
 			}
 			return true, nil
 		}
@@ -60,7 +59,7 @@ func externalNameHelper(ak *v1alpha1.APIKey) (string, bool) {
 func createResourceIsImport(err error) (bool, error) {
 	if err != nil {
 		if err.Error() == apikey.ErrNotExists {
-			return false, nil
+			return false, err
 		}
 		return false, err
 	}
