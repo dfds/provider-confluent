@@ -52,7 +52,7 @@ const (
 	errAuthCredentials                           = "invalid client credentials"
 	errBlockingCreationServiceAccountDoNotExists = "creation blocked service-account referenced do not exists"
 	errExternalNameNotPresent                    = "external name is not present"
-	errDestructiveUpdateNotAllowed               = "cannot update resource. DeletionPolicy is set to Orphan, but update is destructive"
+	errDestructiveUpdateNotAllowed               = "cannot update resource. An immutable field has been changed, underlying API doesn't support updating some fields"
 )
 
 var (
@@ -168,10 +168,9 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 	cr, ok := mg.(*v1alpha1.APIKey)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
-
 	}
 
-	// Support for importing resource using exernal name
+	// Support for importing resource using external name
 	key, exists := externalNameHelper(cr)
 
 	// Confluent cloud
@@ -263,12 +262,17 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		}
 	}
 
+	fmt.Println("createIsImport: ", createIsImport)
 	if !createIsImport {
 		out, err := client.APIKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
 		if err != nil {
 			return managed.ExternalCreation{}, err
 		}
 		meta.SetExternalName(cr, out.Key)
+		if err := c.kube.Update(ctx, cr); err != nil {
+			return managed.ExternalCreation{}, err
+		}
+
 		cr.Status.AtProvider.Key = out.Key
 		cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
 		cr.Status.AtProvider.Resource = cr.Spec.ForProvider.Resource
@@ -311,41 +315,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	// Is update destructive
 	if updateResourceDestructive(cr, observed) {
-		if !destructiveActionsAllowed(cr.GetDeletionPolicy()) {
-			return managed.ExternalUpdate{}, errors.New(errDestructiveUpdateNotAllowed)
-		}
-		// Need to check if service account is valid otherwise it will return key pair with God like access (bug stems from confluent cli)
-		var saClient = c.saService.(serviceaccount.IClient)
-		_, err := saClient.ServiceAccountByID(cr.Spec.ForProvider.ServiceAccount)
-		if err != nil {
-			if err.Error() == serviceaccount.ErrNotExists {
-				return managed.ExternalUpdate{}, errors.New(errBlockingCreationServiceAccountDoNotExists)
-			}
-			return managed.ExternalUpdate{}, err
-		}
-
-		// Continue with desctructive action
-		err = client.APIKeyDelete(key)
-		if err != nil {
-			return managed.ExternalUpdate{}, err
-		}
-
-		out, err := client.APIKeyCreate(cr.Spec.ForProvider.Resource, cr.Spec.ForProvider.Description, cr.Spec.ForProvider.ServiceAccount, cr.Spec.ForProvider.Environment)
-		if err != nil {
-			return managed.ExternalUpdate{}, err
-		}
-		cr.Status.AtProvider.Key = out.Key
-		cr.Status.AtProvider.Environment = cr.Spec.ForProvider.Environment
-		cr.Status.AtProvider.Resource = cr.Spec.ForProvider.Resource
-		cr.Status.AtProvider.ServiceAccount = cr.Spec.ForProvider.ServiceAccount
-		conn := managed.ConnectionDetails{
-			xpv1.ResourceCredentialsSecretUserKey:     []byte(out.Key),
-			xpv1.ResourceCredentialsSecretPasswordKey: []byte(out.Secret),
-		}
-		if err := c.kube.Status().Update(ctx, cr); err != nil {
-			return managed.ExternalUpdate{}, err
-		}
-		return managed.ExternalUpdate{ConnectionDetails: conn}, nil
+		return managed.ExternalUpdate{}, errors.New(errDestructiveUpdateNotAllowed)
 	}
 	// Continue with non-destructive action
 	err = client.APIKeyUpdate(key, cr.Spec.ForProvider.Description)
