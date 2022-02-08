@@ -6,10 +6,6 @@ import (
 	"github.com/dfds/provider-confluent/internal/clients/apikey"
 )
 
-const (
-	errCouldImportResource = "given external name does match any existing keys in this environment and/or cluster"
-)
-
 func observeCreateResource(ak *v1alpha1.APIKey, exists bool, err error) (bool, error) {
 	if err != nil {
 		if err.Error() == apikey.ErrNotExists {
