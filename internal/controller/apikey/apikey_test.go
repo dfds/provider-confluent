@@ -44,9 +44,7 @@ func TestObserveCreateResource(t *testing.T) {
 
 	_, err = observeCreateResource(&ak, true, errors.New(apikey.ErrNotExists))
 	if err != nil {
-		assert.Equal(err.Error(), errCouldImportResource, "cannot import resource due to weird usage of external name")
-	} else {
-		t.Errorf("error and external name given expected returned error but go non")
+		t.Errorf("No error expected when ErrorNotExists & exists is set to true")
 	}
 
 	// Resource exists
@@ -134,9 +132,13 @@ func TestObserveUpdateResourceAndUpdateResourceDestrutive(t *testing.T) {
 func TestCreateResourceIsImport(t *testing.T) {
 	assert := assert.New(t)
 
-	// Error is not exists
+	// Error exists
 	isImport, err := createResourceIsImport(errors.New(apikey.ErrNotExists))
-	assert.Equal(err, nil)
+	if err != nil {
+		assert.Equal(err.Error(), apikey.ErrNotExists)
+	} else {
+		t.Errorf("Expected err when API key doesn't exist")
+	}
 	assert.False(isImport)
 
 	// Error is inl
