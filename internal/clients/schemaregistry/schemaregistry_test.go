@@ -30,6 +30,10 @@ var testConfig = Config{
 	SchemaPath: config.GetEnvValue("PROVIDER_CONFLUENT_SCHEMA_FILE_LOCATION", "/tmp"),
 }
 
+var (
+	environment = config.GetEnvValue("CONFLUENT_ENVIRONMENT", "")
+)
+
 func TestSchemaDescribeCommand(t *testing.T) {
 	var describeCommand = commands.NewSchemaDescribeCommand("subject", "version", "environment", "key", "secret")
 
@@ -114,7 +118,7 @@ func TestClientSchemaCreate(t *testing.T) {
 	clients.SkipCI(t)
 	client := NewClient(testConfig)
 
-	resp, err := client.SchemaCreate("provider-confluent-testclientcreate", testSchema, "AVRO", "env-zvzz7")
+	resp, err := client.SchemaCreate("provider-confluent-testclientcreate", testSchema, "AVRO", environment)
 
 	if err != nil {
 		log.Println(resp)
@@ -122,7 +126,7 @@ func TestClientSchemaCreate(t *testing.T) {
 	}
 
 	// Teardown
-	_, err = client.SchemaDelete("provider-confluent-testclientcreate", "all", false, "env-zvzz7")
+	_, err = client.SchemaDelete("provider-confluent-testclientcreate", "all", false, environment)
 
 	if err != nil {
 		t.Errorf(err.Error())
@@ -135,13 +139,13 @@ func TestClientSchemaDelete(t *testing.T) {
 	clients.SkipCI(t)
 	client := NewClient(testConfig)
 
-	respCreate, err := client.SchemaCreate("provider-confluent-testclientdelete", testSchema, "AVRO", "env-zvzz7")
+	respCreate, err := client.SchemaCreate("provider-confluent-testclientdelete", testSchema, "AVRO", environment)
 	if err != nil {
 		log.Println(respCreate)
 		t.Errorf(err.Error())
 	}
 
-	resp, err := client.SchemaDelete("provider-confluent-testclientdelete", "all", false, "env-zvzz7")
+	resp, err := client.SchemaDelete("provider-confluent-testclientdelete", "all", false, environment)
 	if err != nil {
 		log.Println(resp)
 		t.Errorf(err.Error())
@@ -154,20 +158,20 @@ func TestClientSchemaDescribe(t *testing.T) {
 	clients.SkipCI(t)
 	client := NewClient(testConfig)
 
-	respCreate, err := client.SchemaCreate("provider-confluent-testclientdescribe", testSchema, "AVRO", "env-zvzz7")
+	respCreate, err := client.SchemaCreate("provider-confluent-testclientdescribe", testSchema, "AVRO", environment)
 	if err != nil {
 		log.Println(respCreate)
 		t.Errorf(err.Error())
 	}
 
-	resp, err := client.SchemaDescribe("provider-confluent-testclientdescribe", "latest", "env-zvzz7")
+	resp, err := client.SchemaDescribe("provider-confluent-testclientdescribe", "latest", environment)
 	if err != nil {
 		log.Println(resp)
 		t.Errorf(err.Error())
 	}
 
 	// Teardown
-	_, err = client.SchemaDelete("provider-confluent-testclientdescribe", "all", false, "env-zvzz7")
+	_, err = client.SchemaDelete("provider-confluent-testclientdescribe", "all", false, environment)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
