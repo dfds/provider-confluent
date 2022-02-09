@@ -40,3 +40,18 @@ Build binary:
 ```console
 make build
 ```
+
+
+## Useful commands
+
+Need to build an amd64 Linux image but you're on say.. an M1 Mac?
+
+```shell
+make build BUILD_PLATFORMS=linux_amd64 PLATFORMS=linux_amd64
+```
+
+Want to skip lint during a `make build`?
+
+```shell
+make build nolint=1
+```
