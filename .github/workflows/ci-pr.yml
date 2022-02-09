@@ -31,4 +31,4 @@ jobs:
       - name: test
         run: ./scripts/test.sh
       - name: build
-        run: make build
+        run: make build nolint=1

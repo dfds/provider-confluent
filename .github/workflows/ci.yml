@@ -45,4 +45,4 @@ jobs:
         run: confluent logout
         if: always()
       - name: build
-        run: make build
+        run: make build nolint=1
