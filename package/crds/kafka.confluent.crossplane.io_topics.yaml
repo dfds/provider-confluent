@@ -36,7 +36,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Schema is an example API type.
+        description: Topic is an example API type.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -51,7 +51,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: Topic Spec defines the desired state of a Topic.
+            description: TopicSpec defines the desired state of a Topic.
             properties:
               deletionPolicy:
                 default: Delete
@@ -70,10 +70,10 @@ spec:
                   environment:
                     type: string
                   topic:
-                    description: TopicRule
+                    description: TopicConfig is the config of a Topic
                     properties:
                       config:
-                        description: TopicConfig
+                        description: Config is the config of a TopicConfig
                         properties:
                           retention:
                             format: int64
@@ -140,7 +140,7 @@ spec:
             - forProvider
             type: object
           status:
-            description: Topic Status represents the observed state of a Topic.
+            description: TopicStatus represents the observed state of a Topic.
             properties:
               atProvider:
                 description: TopicObservation are the observable fields of a Topic.
