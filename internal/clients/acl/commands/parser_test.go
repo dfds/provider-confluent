@@ -14,6 +14,7 @@ var (
 )
 
 func TestParsePatternType(t *testing.T) {
+
 	assert := assert.New(t)
 	err := parsePatternType(&exec.Cmd{}, "")
 	if err == nil {

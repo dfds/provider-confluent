@@ -23,17 +23,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-
-	"github.com/dfds/provider-confluent/internal/clients"
 )
 
 // A ProviderConfigSpec defines the desired state of a ProviderConfig.
 type ProviderConfigSpec struct {
 	// Credentials required to authenticate to this provider.
 	Credentials ProviderCredentials `json:"credentials"`
-
-	// Credentials required to authenticate to this provider.
-	APICredentials []clients.APICredentials `json:"apiCredentials"`
 }
 
 // ProviderCredentials required to authenticate.

@@ -18,7 +18,7 @@ spec:
     source: Environment
     env:
       name: CONFLUENT_PROVIDER_CREDENTIALS #(email:password)
-  apiCredentials:
-    - identifier: schemaregistry.confluent.crossplane.io/v1alpha1
-      key: ${CONFLUENT_PROVIDER_API_KEY}
-      secret: ${CONFLUENT_PROVIDER_API_SECRET}
+  # apiCredentials:
+  #   - identifier: schemaregistry.confluent.crossplane.io/v1alpha1
+  #     key: ${CONFLUENT_PROVIDER_API_KEY}
+  #     secret: ${CONFLUENT_PROVIDER_API_SECRET}

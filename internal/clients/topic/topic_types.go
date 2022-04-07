@@ -2,7 +2,6 @@ package topic
 
 import (
 	"github.com/dfds/provider-confluent/apis/topic/v1alpha1"
-	"github.com/dfds/provider-confluent/internal/clients"
 )
 
 // IClient interface for service account client
@@ -13,14 +12,8 @@ type IClient interface {
 	TopicUpdate(tp v1alpha1.TopicParameters) error
 }
 
-// Config is a configuration element for the service account client
-type Config struct {
-	APICredentials clients.APICredentials
-}
-
 // Client is a struct for service account client
 type Client struct {
-	Config Config
 }
 
 // DescribeResponse is a struct used for deserialising the response of TopicDescribe

@@ -26,7 +26,6 @@ import (
 
 	"github.com/dfds/provider-confluent/internal/controller/apikey"
 	"github.com/dfds/provider-confluent/internal/controller/config"
-	"github.com/dfds/provider-confluent/internal/controller/schema"
 	"github.com/dfds/provider-confluent/internal/controller/serviceaccount"
 )
 
@@ -35,7 +34,6 @@ import (
 func Setup(mgr ctrl.Manager, l logging.Logger, wl workqueue.RateLimiter) error {
 	for _, setup := range []func(ctrl.Manager, logging.Logger, workqueue.RateLimiter) error{
 		config.Setup,
-		schema.Setup,
 		serviceaccount.Setup,
 		apikey.Setup,
 		acl.Setup,

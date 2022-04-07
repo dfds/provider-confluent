@@ -10,17 +10,11 @@ import (
 
 // Assign
 var (
-	testConfig = Config{
-		APICredentials: clients.APICredentials{
-			Key:    config.GetEnvValue("CONFLUENT_PROVIDER_API_KEY", ""),
-			Secret: config.GetEnvValue("CONFLUENT_PROVIDER_API_SECRET", ""),
-		},
-	}
 	resource       = config.GetEnvValue("CONFLUENT_CLUSTER_ID", "")
 	environment    = config.GetEnvValue("CONFLUENT_ENVIRONMENT", "")
 	serviceAccount = config.GetEnvValue("CONFLUENT_SERVICEACCOUNT", "")
 	description    = "crossplane-test"
-	client         = NewClient(testConfig)
+	client         = NewClient()
 )
 
 // Asses and assert

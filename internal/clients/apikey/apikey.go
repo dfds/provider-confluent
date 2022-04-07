@@ -21,8 +21,8 @@ const (
 )
 
 // NewClient is a factory method for apikey client
-func NewClient(c Config) IClient {
-	return &Client{Config: c}
+func NewClient() IClient {
+	return &Client{}
 }
 
 // APIKeyCreate create API key

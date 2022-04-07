@@ -1,7 +1,5 @@
 package serviceaccount
 
-import "github.com/dfds/provider-confluent/internal/clients"
-
 // IClient interface for service account client
 type IClient interface {
 	ServiceAccountCreate(name string, description string) (ServiceAccount, error)
@@ -12,14 +10,8 @@ type IClient interface {
 	ServiceAccountUpdate(id string, description string) error
 }
 
-// Config is a configuration element for the service account client
-type Config struct {
-	APICredentials clients.APICredentials
-}
-
 // Client is a struct for service account client
 type Client struct {
-	Config Config
 }
 
 // ServiceAccount struct for deserialising Confluent Cloud response
