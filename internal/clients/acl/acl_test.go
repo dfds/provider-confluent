@@ -12,17 +12,10 @@ import (
 
 // Assign
 var (
-	testConfig = Config{
-		APICredentials: clients.APICredentials{
-			Identifier: "FOO",
-			Key:        config.GetEnvValue("CONFLUENT_PROVIDER_API_KEY", ""),
-			Secret:     config.GetEnvValue("CONFLUENT_PROVIDER_API_SECRET", ""),
-		},
-	}
 	resource       = config.GetEnvValue("CONFLUENT_CLUSTER_ID", "")
 	environment    = config.GetEnvValue("CONFLUENT_ENVIRONMENT", "")
 	serviceAccount = config.GetEnvValue("CONFLUENT_SERVICEACCOUNT", "")
-	client         = NewClient(testConfig)
+	client         = NewClient()
 	aclParam       = v1alpha1.ACLParameters{
 		ACLRule: v1alpha1.ACLRule{
 			Operation:    "CREATE",

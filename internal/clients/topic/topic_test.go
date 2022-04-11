@@ -10,9 +10,6 @@ import (
 )
 
 var (
-	testConfig = Config{
-		APICredentials: clients.APICredentials{},
-	}
 	cluster           = config.GetEnvValue("CONFLUENT_CLUSTER_ID", "")
 	environment       = config.GetEnvValue("CONFLUENT_ENVIRONMENT", "")
 	name              = "crossplane-test-topic"
@@ -20,7 +17,7 @@ var (
 	retention   int64 = 259200000
 	topicConfig       = v1alpha1.TopicConfig{Name: name, Partitions: partitions, Config: v1alpha1.Config{Retention: retention}}
 	topic             = v1alpha1.TopicParameters{Cluster: cluster, Environment: environment, Topic: topicConfig}
-	client            = NewClient(testConfig)
+	client            = NewClient()
 )
 
 func TestTopicLifecycle(t *testing.T) {

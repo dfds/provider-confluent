@@ -25,8 +25,8 @@ const (
 )
 
 // NewClient is a factory method for serviceaccount client
-func NewClient(c Config) IClient {
-	return &Client{Config: c}
+func NewClient() IClient {
+	return &Client{}
 }
 
 // ServiceAccountCreate Executes Confluent CLI command to create ServiceAccount in Confluent Cloud & return a ServiceAccount object

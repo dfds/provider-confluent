@@ -56,7 +56,7 @@ const (
 )
 
 var (
-	createAndConvertClientFunc = func(clientCreds []byte, apiCreds clients.APICredentials) (interface{}, interface{}, error) { //nolint
+	createAndConvertClientFunc = func(clientCreds []byte) (interface{}, interface{}, error) { //nolint
 		credParts := strings.Split(string(clientCreds), ":")
 
 		if len(credParts) != 2 {
@@ -70,11 +70,7 @@ var (
 			return nil, nil, authErr
 		}
 
-		srConfig := apikey.Config{
-			APICredentials: apiCreds,
-		}
-
-		return apikey.NewClient(srConfig).(interface{}), serviceaccount.NewClient(serviceaccount.Config(srConfig)).(interface{}), nil
+		return apikey.NewClient().(interface{}), serviceaccount.NewClient().(interface{}), nil
 	}
 )
 
@@ -108,7 +104,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger, rl workqueue.RateLimiter) error {
 type connector struct {
 	kube         client.Client
 	usage        resource.Tracker
-	newServiceFn func(creds []byte, apiCreds clients.APICredentials) (interface{}, interface{}, error)
+	newServiceFn func(creds []byte) (interface{}, interface{}, error)
 }
 
 // Connect typically produces an ExternalClient by:
@@ -136,17 +132,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, errors.Wrap(err, errGetCreds)
 	}
 
-	var apiCredentials clients.APICredentials
-
-	for _, value := range pc.Spec.APICredentials {
-		if value.Identifier == v1alpha1.SchemeGroupVersion.Identifier() {
-			apiCredentials = value
-
-			break
-		}
-	}
-
-	svc, saSvc, err := c.newServiceFn(clientCredentialData, apiCredentials)
+	svc, saSvc, err := c.newServiceFn(clientCredentialData)
 	if err != nil {
 		return nil, errors.Wrap(err, errNewClient)
 	}

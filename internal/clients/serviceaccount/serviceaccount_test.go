@@ -8,12 +8,9 @@ import (
 )
 
 var (
-	testConfig = Config{
-		APICredentials: clients.APICredentials{},
-	}
 	serviceAccount = "crossplane-testing"
 	description    = "crossplane-testing"
-	client         = NewClient(testConfig)
+	client         = NewClient()
 )
 
 func TestServiceAccountLifecycle(t *testing.T) {

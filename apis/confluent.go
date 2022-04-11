@@ -22,7 +22,6 @@ import (
 
 	aclv1alpha1 "github.com/dfds/provider-confluent/apis/acl/v1alpha1"
 	apikeyv1alpha1 "github.com/dfds/provider-confluent/apis/apikey/v1alpha1"
-	schemav1alpha1 "github.com/dfds/provider-confluent/apis/schema/v1alpha1"
 	serviceaccountv1alpha1 "github.com/dfds/provider-confluent/apis/serviceaccount/v1alpha1"
 	topicv1alpha1 "github.com/dfds/provider-confluent/apis/topic/v1alpha1"
 	confluentv1alpha1 "github.com/dfds/provider-confluent/apis/v1alpha1"
@@ -32,7 +31,6 @@ func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
 		confluentv1alpha1.SchemeBuilder.AddToScheme,
-		schemav1alpha1.SchemeBuilder.AddToScheme,
 		serviceaccountv1alpha1.SchemeBuilder.AddToScheme,
 		apikeyv1alpha1.SchemeBuilder.AddToScheme,
 		aclv1alpha1.SchemeBuilder.AddToScheme,

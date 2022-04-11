@@ -40,24 +40,6 @@ spec:
           spec:
             description: A ProviderConfigSpec defines the desired state of a ProviderConfig.
             properties:
-              apiCredentials:
-                description: Credentials required to authenticate to this provider.
-                items:
-                  description: APICredentials is a configuration element for all clients
-                    who need API keys to access confluent cloud
-                  properties:
-                    identifier:
-                      type: string
-                    key:
-                      type: string
-                    secret:
-                      type: string
-                  required:
-                  - identifier
-                  - key
-                  - secret
-                  type: object
-                type: array
               credentials:
                 description: Credentials required to authenticate to this provider.
                 properties:
@@ -112,7 +94,6 @@ spec:
                 - source
                 type: object
             required:
-            - apiCredentials
             - credentials
             type: object
           status:

@@ -31,7 +31,7 @@ func NewACLDeleteCommand(aclP v1alpha1.ACLParameters) (exec.Cmd, error) {
 
 	err = parseResource(&command, aclP.ACLRule.ResourceName, aclP.ACLRule.ResourceType)
 	if err != nil {
-		return command, nil
+		return command, err
 	}
 	command.Args = append(command.Args, "--operation", aclP.ACLRule.Operation)
 
