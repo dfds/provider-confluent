@@ -12,7 +12,7 @@ const (
 	errPatternInvalid                               = "pattern type must be either LITERAL or PREFIXED"
 	errPermissionInvalid                            = "permission type must be either ALLOW or DENY"
 	errPrincipalInvalid                             = "principal does only allow User:sa-55555 type input"
-	errResourceTypeInvalid                          = "resource type must be either TOPIC, CONSUMER_GROUP or CLUSTER"
+	errResourceTypeInvalid                          = "resource type must be either TOPIC, GROUP or CLUSTER"
 	errResourceNameSpecifiedWithResourceTypeCluster = "resource name can't be specified when resource type is CLUSTER"
 )
 
