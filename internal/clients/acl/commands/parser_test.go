@@ -143,7 +143,7 @@ func TestParseResource(t *testing.T) {
 	}
 
 	cmd = exec.Cmd{}
-	err = parseResource(&cmd, rName, "CONSUMER_GROUP")
+	err = parseResource(&cmd, rName, "GROUP")
 	if err != nil {
 		t.Error(err)
 	} else {

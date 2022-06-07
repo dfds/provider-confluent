@@ -66,7 +66,7 @@ func parseResource(cmd *exec.Cmd, rName string, rType string) error {
 	case "TOPIC":
 		cmd.Args = append(cmd.Args, "--topic", rName)
 		return nil
-	case "CONSUMER_GROUP":
+	case "GROUP":
 		cmd.Args = append(cmd.Args, "--consumer-group", rName)
 		return nil
 	case "CLUSTER":
