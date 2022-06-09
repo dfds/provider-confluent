@@ -85,6 +85,7 @@ spec:
                     - patternType
                     - permission
                     - principal
+                    - resourceName
                     - resourceType
                     type: object
                   cluster:
@@ -169,6 +170,7 @@ spec:
                         - patternType
                         - permission
                         - principal
+                        - resourceName
                         - resourceType
                         type: object
                       cluster:

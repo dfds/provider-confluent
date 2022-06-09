@@ -28,7 +28,7 @@ type ACLRule struct {
 	PatternType  string `json:"patternType"` // LITERAL, PREFIXED
 	Permission   string `json:"permission"`  // ALLOW, DENY
 	Principal    string `json:"principal"`   // sa-00000
-	ResourceName string `json:"resourceName,omitempty"`
+	ResourceName string `json:"resourceName"`
 	ResourceType string `json:"resourceType"` // TOPIC, CONSUMER_GROUP, CLUSTER
 }
 
