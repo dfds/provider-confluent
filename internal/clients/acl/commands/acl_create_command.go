@@ -13,7 +13,7 @@ const (
 	errPermissionInvalid                            = "permission type must be either ALLOW or DENY"
 	errPrincipalInvalid                             = "principal does only allow User:sa-55555 type input"
 	errResourceTypeInvalid                          = "resource type must be either TOPIC, GROUP or CLUSTER"
-	errResourceNameSpecifiedWithResourceTypeCluster = "resource name can only kafka-cluster when resource type is CLUSTER"
+	errResourceNameSpecifiedWithResourceTypeCluster = "resource name can only be kafka-cluster when resource type is CLUSTER"
 )
 
 // NewACLCreateCommand is a factory method for ACL create command
