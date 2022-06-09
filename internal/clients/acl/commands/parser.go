@@ -70,7 +70,7 @@ func parseResource(cmd *exec.Cmd, rName string, rType string) error {
 		cmd.Args = append(cmd.Args, "--consumer-group", rName)
 		return nil
 	case "CLUSTER":
-		if rName != "" {
+		if rName != "kafka-cluster" {
 			return errors.New(errResourceNameSpecifiedWithResourceTypeCluster)
 		}
 		cmd.Args = append(cmd.Args, "--cluster-scope")

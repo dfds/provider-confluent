@@ -156,7 +156,7 @@ func TestParseResource(t *testing.T) {
 	}
 
 	cmd = exec.Cmd{}
-	err = parseResource(&cmd, "", "CLUSTER")
+	err = parseResource(&cmd, "kafka-cluster", "CLUSTER")
 	if err != nil {
 		t.Error(err)
 	} else {
