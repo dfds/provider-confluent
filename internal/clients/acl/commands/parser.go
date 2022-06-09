@@ -71,7 +71,8 @@ func parseResource(cmd *exec.Cmd, rName string, rType string) error {
 		return nil
 	case "CLUSTER":
 		if rName != "" {
-			return errors.New(errResourceNameSpecifiedWithResourceTypeCluster)
+			// return errors.New(errResourceNameSpecifiedWithResourceTypeCluster)
+			rName = ""
 		}
 		cmd.Args = append(cmd.Args, "--cluster-scope")
 		return nil
