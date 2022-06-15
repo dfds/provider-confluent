@@ -20,7 +20,7 @@ jobs:
           go-version: '^1.17'
       - name: prereqs for make
         run: make submodules
-      - name: lint
+      - name: lint rename weee
         run: make lint
       - name: prereqs for test
         run: go mod vendor
@@ -28,6 +28,20 @@ jobs:
         run: curl -sL --http1.1 https://cnfl.io/cli | sh -s -- -b $HOME/.local/bin v2.4.0
       - name: add confluent cli to path
         run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: confluent login
+        run: confluent login --save
+        env:
+          CONFLUENT_CLOUD_EMAIL: ${{ secrets.CONFLUENT_CLOUD_EMAIL }}
+          CONFLUENT_CLOUD_PASSWORD: ${{ secrets.CONFLUENT_CLOUD_PASSWORD}}
+      - name: test
+        run: ./scripts/test.sh
+        env:
+          CONFLUENT_PROVIDER_CREDENTIALS: "${{ secrets.CONFLUENT_CLOUD_EMAIL }}:${{ secrets.CONFLUENT_CLOUD_PASSWORD}}"
+          CONFLUENT_CLUSTER_ID: ${{ secrets.CONFLUENT_CLUSTER_ID }}
+          CONFLUENT_ENVIRONMENT: ${{ secrets.CONFLUENT_ENVIRONMENT }}
+          CONFLUENT_SERVICEACCOUNT: ${{ secrets.CONFLUENT_SERVICEACCOUNT }}
+          CONFLUENT_PROVIDER_API_KEY: ${{ secrets.CONFLUENT_PROVIDER_API_KEY }}
+          CONFLUENT_PROVIDER_API_SECRET: ${{ secrets.CONFLUENT_PROVIDER_API_SECRET }}    
       - name: test
         run: ./scripts/test.sh
       - name: build
